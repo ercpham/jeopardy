@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <title>Question</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div id="countdown">20</div>
+    <div class="top-right">
+      <button
+        id="homeBtn"
+        class="floating"
+        title="Return to Home"
+        onclick="window.location.href='/'"
+      >
+        <i class="fas fa-house"></i>
+      </button>
+    </div>
+
+    <div class="center-content">
+      <h2 id="question"></h2>
+      <div id="answer-box">
+        <p id="answer"></p>
+        <p id="reference"></p>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
