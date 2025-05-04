@@ -1,0 +1,36 @@
+body,
+html {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  /* Disable horizontal scrolling */
+  width: 100%;
+  /* Ensure the body and html take up the full width */
+  background-color: #f7f7f7;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+button {
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: rgb(60, 60, 60);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: rgba(0, 0, 0, .1) 2px 2px 2px;
+}
+
+button:hover {
+  background-color: #f1f1f1;
+  transform: scale(1.05);
+}
+
+button:active {
+  background-color: #d8d8d8;
+}

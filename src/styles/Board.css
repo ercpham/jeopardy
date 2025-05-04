@@ -1,0 +1,64 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  /* 5 columns */
+  grid-template-rows: repeat(5, 1fr);
+  /* 5 rows */
+  width: 80vw;
+  /* Full viewport width */
+  height: 80vh;
+  /* Full viewport height */
+  gap: 10px;
+  /* Space between buttons */
+  padding: 10px;
+  box-sizing: border-box;
+
+  /* Center the board */
+  margin: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.board-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.5s ease, transform 0.5s ease, opacity 0.5s ease;
+}
+
+.board-button.clicked {
+  background-color: #f1f1f1;
+  color: #ffffff;
+  cursor: default;
+  transform: scale(0.98);
+  opacity: 0.7;
+}
+
+.board-button.animate {
+  animation: expand-retract .5s ease-in-out;
+}
+
+@keyframes expand-retract {
+  0% {
+    transform: scale(1);
+    background-color: white;
+  }
+
+  50% {
+    transform: scale(1.2);
+    /* Expand */
+    background-color: #f1f1f1;
+  }
+
+  100% {
+    transform: scale(1);
+    /* Retract */
+    background-color: white;
+  }
+}

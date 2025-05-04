@@ -1,53 +1,12 @@
 <!doctype html>
-<html>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<html lang="en">
   <head>
-    <title>Home</title>
-    <link rel="stylesheet" href="style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jeopardy</title>
   </head>
   <body>
-    <div class="grid" id="buttonGrid"></div>
-    <div id="floating-menu-wrapper" class="hidden">
-      <button class="floating" id="floating-toggle">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <div id="floating-icons">
-        <input type="file" id="tsvUpload" accept=".tsv" style="display: none" />
-        <button
-          class="floating"
-          id="uploadIconBtn"
-          onclick="triggerUpload()"
-          title="Upload TSV"
-        >
-          <i class="fas fa-file-upload"></i>
-        </button>
-        <button
-          class="floating"
-          id="resetBtn"
-          onclick="clearClickedStates()"
-          title="Clear Board"
-        >
-          <i class="fas fa-rotate-left"></i>
-        </button>
-        <button
-          class="floating"
-          id="clearBtn"
-          onclick="clearCustomTSV()"
-          title="Restore Default Questions"
-        >
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </div>
-
-    <script src="script.js"></script>
-    <script>
-      loadTSV();
-      createGrid();
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
