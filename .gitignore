@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Compiled output
+*/target/
+
+# Rust package manager lock file (optional for libraries)
+*/Cargo.lock
+
+# Environment variables
+*.env

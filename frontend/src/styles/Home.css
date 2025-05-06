@@ -1,16 +1,26 @@
-.home {
-  position: relative;
-  height: 100vh;
-  width: 100%;
-  /* Prevent the home container from exceeding the viewport width */
-  overflow: hidden;
+.homeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  margin: 0; /* Remove default margin */
   transition: margin-left 0.3s ease;
-  /* Smooth transition for shifting */
-  margin-left: 0;
-  /* Default position */
+  position: relative; /* Make it a positioning context for the hamburger button */
 }
 
-.home.shifted {
+.home {
+  position: relative;
+  height: 90vh; /* Adjust height as needed */
+  width: 100%;
+  overflow: hidden;
+  margin-left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.homeContainer.shifted {
   margin-left: 18rem;
   /* Shift to the right when the menu is open */
 }
@@ -23,7 +33,7 @@
   background: none;
   z-index: 1000;
   box-shadow: none;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, left 0.3s ease; /* Add transition for left */
 }
 
 .hamburger-button:hover {
@@ -71,4 +81,11 @@
 
 .menu li:hover {
   color: #005ec2;
+}
+
+.score-container {
+  display: flex;
+  justify-content: space-around;
+  width: 80vw; /* Match the width of the board */
+  margin: 0 auto 0; /* Center horizontally and add top margin */
 }

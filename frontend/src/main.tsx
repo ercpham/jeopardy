@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { BoardProvider } from "./context/BoardContext";
 import { QuestionsProvider } from "./context/QuestionsContext";
+import { ScoreProvider } from "./context/ScoreContext";
 import "./styles/App.css";
 
 const root = ReactDOM.createRoot(
@@ -15,7 +16,9 @@ root.render(
     <BrowserRouter>
       <QuestionsProvider>
         <BoardProvider>
-          <App />
+          <ScoreProvider>
+            <App />
+          </ScoreProvider>
         </BoardProvider>
       </QuestionsProvider>
     </BrowserRouter>
