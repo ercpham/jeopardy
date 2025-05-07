@@ -3,6 +3,15 @@ import { useParams } from "react-router-dom";
 import { useQuestions } from "../context/QuestionsContext";
 import Question from "../components/Question";
 
+/**
+ * QuestionPage component displays a single question and its details.
+ * 
+ * Features:
+ * - Fetches the question details from the QuestionsContext using the question ID from the URL.
+ * - Allows users to reveal the answer to the question.
+ * - Displays a message if the question is not found.
+ */
+
 const QuestionPage: React.FC = () => {
   const { questions, revealAnswer } = useQuestions();
   const { id } = useParams<{ id: string }>();
@@ -13,7 +22,7 @@ const QuestionPage: React.FC = () => {
   }
 
   const handleRevealAnswer = () => {
-    revealAnswer(question.id); // Mark the question as revealed
+    revealAnswer(question.id);
   };
 
   return (

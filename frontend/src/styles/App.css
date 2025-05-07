@@ -1,6 +1,10 @@
+/* Import the Google Font Lato */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
+/* Apply the Lato font to the entire application */
 body,
 html {
-  font-family: Arial, sans-serif;
+  font-family: 'Lato', Arial, sans-serif;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -40,10 +44,12 @@ button:active {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh; /* Full viewport height */
+  height: 100vh;
+  /* Full viewport height */
   width: 100vw;
   transition: margin-left 0.3s ease;
-  position: relative; /* Make it a positioning context for the hamburger button */
+  position: relative;
+  /* Make it a positioning context for the hamburger button */
 }
 
 .routeContainer.shifted {
@@ -58,7 +64,8 @@ button:active {
   background: none;
   z-index: 1000;
   box-shadow: none;
-  transition: transform 0.3s ease, left 0.3s ease; /* Add transition for left */
+  transition: transform 0.3s ease, left 0.3s ease;
+  /* Add transition for left */
 }
 
 .hamburger-button:hover {
@@ -108,9 +115,48 @@ button:active {
   color: #005ec2;
 }
 
+/* Ensure the session-join-container fits completely inside the menu */
+.session-join-container {
+  position: absolute;
+  bottom: 0;
+  width: calc(100% - 40px);
+  /* Adjust width to account for menu padding */
+  background-color: #f9f9f9;
+  padding: 10px;
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+  margin: 0 20px;
+  /* Match the menu's horizontal padding */
+  box-sizing: border-box;
+  /* Include padding and border in width calculation */
+  border-radius: 5px;
+}
+
+/* Style the session-input-wrapper to align with other list items */
+.session-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.session-input-wrapper input {
+  flex: 1;
+  padding: 10px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.session-input-wrapper button {
+  padding: 10px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .score-container {
   display: flex;
   justify-content: space-around;
-  width: 80vw; /* Match the width of the board */
+  width: 80vw;
+  /* Match the width of the board */
   height: 15vh;
 }

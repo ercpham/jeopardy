@@ -1,5 +1,17 @@
 import React from "react";
 
+/**
+ * Scoreboard component displays the scores for all teams in a leaderboard format.
+ * 
+ * Props:
+ * - `score`: The current score value.
+ * - `updateScore`: A function to update the score by adding or subtracting points.
+ * 
+ * Features:
+ * - Displays the current score.
+ * - Provides buttons to add or subtract points from the score.
+ */
+
 interface ScoreboardProps {
   score: number;
   updateScore: (points: number) => void;

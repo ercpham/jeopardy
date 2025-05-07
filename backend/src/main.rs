@@ -1,49 +1,32 @@
-use axum::{
-    routing::{get, post},
-    Json, Router,
-};
-use serde::{Deserialize, Serialize};
-use std::net::SocketAddr;
+//! Main entry point for the Bible Challenge backend server.
+//! This module initializes the server, sets up routes, and starts the Axum application.
+
+mod routes;
+mod models;
+mod utils;
+
+use axum::{Router};
 use tower_http::cors::{Any, CorsLayer};
-use std::sync::Mutex;
-use once_cell::sync::Lazy;
+use std::net::SocketAddr;
 use std::env;
+use std::time::Duration;
+use tokio::sync::Mutex as AsyncMutex;
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize)]
-struct Question {
-    id: String,
-    question_text: String,
-    answer_text: String,
-    reference_text: String,
-    revealed: bool,
-}
+use crate::routes::{start_session, get_session_id, get_session_scores, modify_session_scores, close_session};
+use crate::utils::cleanup_sessions;
+use crate::models::{Session};
 
-#[derive(Serialize, Deserialize, Clone)]
-struct Scores {
-    team1: i32,
-    team2: i32,
-    team3: i32,
-}
+static SESSIONS: Lazy<AsyncMutex<HashMap<String, Session>>> = Lazy::new(|| AsyncMutex::new(HashMap::new()));
 
-static SCORES: Lazy<Mutex<Scores>> = Lazy::new(|| Mutex::new(Scores {
-    team1: 0,
-    team2: 0,
-    team3: 0,
-}));
-
-async fn get_scores() -> Json<Scores> {
-    let scores = SCORES.lock().unwrap();
-    Json(scores.clone())
-}
-
-async fn modify_scores(Json(payload): Json<Scores>) -> Json<Scores> {
-    let mut scores = SCORES.lock().unwrap();
-    scores.team1 = payload.team1;
-    scores.team2 = payload.team2;
-    scores.team3 = payload.team3;
-    Json(scores.clone())
-}
-
+/// Main function to start the server.
+/// 
+/// - Initializes the tracing subscriber for logging.
+/// - Configures CORS settings.
+/// - Sets up the Axum router with defined routes.
+/// - Spawns a background task to clean up expired sessions.
+/// - Binds the server to the specified port and starts serving requests.
 #[tokio::main]
 async fn main() {
     let cors = CorsLayer::new()
@@ -52,8 +35,19 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/scores", get(get_scores).post(modify_scores))
+        .route("/session/start", axum::routing::post(start_session))
+        .route("/session/:id", axum::routing::get(get_session_id))
+        .route("/session/:id/scores", axum::routing::get(get_session_scores))
+        .route("/session/:id/modify", axum::routing::post(modify_session_scores))
+        .route("/session/:id/close", axum::routing::post(close_session))
         .layer(cors);
+
+    tokio::spawn(async {
+        loop {
+            cleanup_sessions().await;
+            tokio::time::sleep(Duration::from_secs(600)).await;
+        }
+    });
 
     let port = env::var("PORT").unwrap_or_else(|_| "3000".to_string()).parse().expect("Invalid port number");
     let addr = SocketAddr::from(([0, 0, 0, 0], port));

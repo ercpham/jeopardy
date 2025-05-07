@@ -4,6 +4,19 @@ import { useBoard } from "../context/BoardContext";
 import { Question } from "../context/QuestionsContext";
 import "../styles/Board.css";
 
+/**
+ * Board component renders a 5x5 grid of buttons representing questions.
+ * 
+ * Props:
+ * - `questions`: An array of Question objects to populate the board.
+ * - `triggerAnimation`: A boolean to trigger animations on the board.
+ * 
+ * Features:
+ * - Displays point values for each question.
+ * - Tracks clicked cells using the BoardContext.
+ * - Navigates to the question page when a button is clicked.
+ * - Handles animations for button clicks.
+ */
 const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
   questions,
   triggerAnimation,
@@ -31,6 +44,12 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     );
   });
 
+  /**
+   * Handles the button click event for a specific question.
+   * 
+   * Parameters:
+   * - `id`: The ID of the question to navigate to.
+   */
   const handleButtonClick = (id: string) => {
     if (!id.startsWith("blank")) {
       setClickedCells((prev) => {

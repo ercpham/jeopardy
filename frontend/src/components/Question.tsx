@@ -2,6 +2,21 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Question.css";
 
+/**
+ * Question component displays a single question along with its answer and reference.
+ * 
+ * Props:
+ * - `questionText`: The text of the question.
+ * - `answerText`: The answer to the question.
+ * - `referenceText`: The reference text for the question.
+ * - `revealed`: A boolean indicating whether the answer is revealed.
+ * - `onRevealAnswer`: A callback function to reveal the answer.
+ * 
+ * Features:
+ * - Displays the question text.
+ * - Reveals the answer and reference when the "Reveal Answer" button is clicked.
+ */
+
 const Question: React.FC<{
   questionText: string;
   answerText: string;
@@ -17,6 +32,9 @@ const Question: React.FC<{
 }) => {
   const navigate = useNavigate();
 
+  /**
+   * Handles navigation to the home page.
+   */
   const handleGoHome = () => {
     navigate("/");
   };

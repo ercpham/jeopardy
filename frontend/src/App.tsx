@@ -1,3 +1,11 @@
+/**
+ * App component serves as the root of the application.
+ * 
+ * Features:
+ * - Wraps the application with context providers for session, score, and questions.
+ * - Sets up routing for the Home and QuestionPage components.
+ */
+
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -6,15 +14,18 @@ import Score from "./components/Score";
 import { useScore } from "./context/ScoreContext";
 import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
+import { useSession } from "./context/SessionContext";
 
 const App: React.FC = () => {
   const { scores, modifyScores } = useScore();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells } = useBoard();
+  const { sessionId, startSession, closeSession, joinSession } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScores, setShowScores] = useState(false);
   const [triggerAnimation, setTriggerAnimation] = useState(false);
   const [boardKey, setBoardKey] = useState(0);
+  const [joinSessionId, setJoinSessionId] = useState("");
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -65,6 +76,13 @@ const App: React.FC = () => {
     fileInput.value = "";
   };
 
+  const handleJoinSession = () => {
+    if (joinSessionId.trim()) {
+      joinSession(joinSessionId.trim());
+      setJoinSessionId("");
+    }
+  };
+
   return (
     <>
       <div className={`menu ${menuOpen ? "open" : ""}`}>
@@ -83,6 +101,25 @@ const App: React.FC = () => {
           </li>
           <li onClick={handleResetBoardState}>Reset Board State</li>
           <li onClick={toggleScores}>Toggle Scores</li>
+          <li onClick={sessionId ? closeSession : startSession}>
+            {sessionId ? "Close Session" : "Start Session"}
+          </li>
+          <li className="session-join-container">
+            {!sessionId && (
+              <div className="session-input-wrapper">
+                <input
+                  type="text"
+                  placeholder="Enter Session ID"
+                  value={joinSessionId}
+                  onChange={(e) => setJoinSessionId(e.target.value)}
+                />
+                <button onClick={handleJoinSession}>Join Session</button>
+              </div>
+            )}
+            {sessionId && (
+              <div className="session-id">Session ID: {sessionId}</div>
+            )}
+          </li>
         </ul>
       </div>
       <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
@@ -102,38 +139,40 @@ const App: React.FC = () => {
           />
           <Route path="/question/:id" element={<QuestionPage />} />
         </Routes>
-        {showScores && <div className="score-container">
-          <Score
-            score={scores.team1}
-            modifyScore={(newScore: number) =>
-              modifyScores({
-                team1: newScore,
-                team2: scores.team2,
-                team3: scores.team3,
-              })
-            }
-          />
-          <Score
-            score={scores.team2}
-            modifyScore={(newScore: number) =>
-              modifyScores({
-                team1: scores.team1,
-                team2: newScore,
-                team3: scores.team3,
-              })
-            }
-          />
-          <Score
-            score={scores.team3}
-            modifyScore={(newScore: number) =>
-              modifyScores({
-                team1: scores.team1,
-                team2: scores.team2,
-                team3: newScore,
-              })
-            }
-          />
-        </div>}
+        {showScores && (
+          <div className="score-container">
+            <Score
+              score={scores.team1}
+              modifyScore={(newScore: number) =>
+                modifyScores({
+                  team1: newScore,
+                  team2: scores.team2,
+                  team3: scores.team3,
+                })
+              }
+            />
+            <Score
+              score={scores.team2}
+              modifyScore={(newScore: number) =>
+                modifyScores({
+                  team1: scores.team1,
+                  team2: newScore,
+                  team3: scores.team3,
+                })
+              }
+            />
+            <Score
+              score={scores.team3}
+              modifyScore={(newScore: number) =>
+                modifyScores({
+                  team1: scores.team1,
+                  team2: scores.team2,
+                  team3: newScore,
+                })
+              }
+            />
+          </div>
+        )}
       </div>
     </>
   );
