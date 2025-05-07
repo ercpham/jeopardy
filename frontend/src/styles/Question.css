@@ -1,19 +1,7 @@
-.question-wrapper {
-  display: flex;
-  justify-content: center;
-  /* Center horizontally */
-  align-items: center;
-  /* Center vertically */
-  height: 100vh;
-  /* Full viewport height */
-  width: 100%;
-  /* Full width */
-}
-
 .question-container {
   display: flex;
-  width: 80%;
-  height: 80vh;
+  width: 80vw; /* Fixed width */
+  height: 80vh; /* Fixed height */
   flex-direction: column;
   justify-content: center;
   align-items: center;
