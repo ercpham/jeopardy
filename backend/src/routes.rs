@@ -6,6 +6,7 @@ use axum::http::StatusCode;
 use crate::models::{Scores, Session};
 use crate::SESSIONS;
 use chrono::Utc;
+use tokio::sync::Mutex as AsyncMutex;
 
 /// Starts a new session and returns the session ID.
 /// 
@@ -25,8 +26,8 @@ pub async fn start_session() -> Json<String> {
         },
         created_at: Utc::now(),
     };
-    let mut sessions = SESSIONS.lock().await;
-    sessions.insert(session_id.clone(), session);
+    let mut sessions = SESSIONS.write().await;
+    sessions.insert(session_id.clone(), AsyncMutex::new(session));
     Json(session_id)
 }
 
@@ -41,8 +42,8 @@ pub async fn start_session() -> Json<String> {
 /// - `StatusCode::OK` and the session ID if found.
 /// - `StatusCode::NOT_FOUND` if the session ID does not exist.
 pub async fn get_session_id(Path(session_id): Path<String>) -> impl axum::response::IntoResponse {
-    let sessions = SESSIONS.lock().await;
-    if let Some(_session) = sessions.get(&session_id) {
+    let sessions = SESSIONS.read().await;
+    if sessions.contains_key(&session_id) {
         (StatusCode::OK, Json(Some(session_id)))
     } else {
         (StatusCode::NOT_FOUND, Json(None))
@@ -60,8 +61,9 @@ pub async fn get_session_id(Path(session_id): Path<String>) -> impl axum::respon
 /// - `StatusCode::OK` and the scores if the session exists.
 /// - `StatusCode::NOT_FOUND` if the session does not exist.
 pub async fn get_session_scores(Path(session_id): Path<String>) -> impl axum::response::IntoResponse {
-    let sessions = SESSIONS.lock().await;
-    if let Some(session) = sessions.get(&session_id) {
+    let sessions = SESSIONS.read().await;
+    if let Some(session_mutex) = sessions.get(&session_id) {
+        let session = session_mutex.lock().await;
         (StatusCode::OK, Json(Some(session.scores.clone())))
     } else {
         (StatusCode::NOT_FOUND, Json(None))
@@ -80,8 +82,9 @@ pub async fn get_session_scores(Path(session_id): Path<String>) -> impl axum::re
 /// - `StatusCode::OK` and the updated scores if the session exists.
 /// - `StatusCode::NOT_FOUND` if the session does not exist.
 pub async fn modify_session_scores(Path(session_id): Path<String>, Json(payload): Json<Scores>) -> impl axum::response::IntoResponse {
-    let mut sessions = SESSIONS.lock().await;
-    if let Some(session) = sessions.get_mut(&session_id) {
+    let sessions = SESSIONS.read().await;
+    if let Some(session_mutex) = sessions.get(&session_id) {
+        let mut session = session_mutex.lock().await;
         session.scores.team1 = payload.team1;
         session.scores.team2 = payload.team2;
         session.scores.team3 = payload.team3;
@@ -100,7 +103,7 @@ pub async fn modify_session_scores(Path(session_id): Path<String>, Json(payload)
 /// - `StatusCode::OK` if the session was successfully removed.
 /// - `StatusCode::NOT_FOUND` if the session does not exist.
 pub async fn close_session(Path(session_id): Path<String>) -> impl axum::response::IntoResponse {
-    let mut sessions = SESSIONS.lock().await;
+    let mut sessions = SESSIONS.write().await;
     if sessions.remove(&session_id).is_some() {
         (StatusCode::OK, Json(true))
     } else {

@@ -59,7 +59,7 @@ export const ScoreProvider: React.FC<{ children: React.ReactNode }> = ({
           setScores(data || { team1: 0, team2: 0, team3: 0 });
           setLoading(false);
         })
-        .catch((error) => {
+        .catch(() => {
           setSessionId(null);
           setScores({ team1: 0, team2: 0, team3: 0 });
           setLoading(false);
@@ -102,9 +102,9 @@ export const ScoreProvider: React.FC<{ children: React.ReactNode }> = ({
         fetch(`${API_URL}/session/${sessionId}/scores`)
           .then((response) => response.json())
           .then((data) => setScores(data))
-          .catch((error) => {});
+          .catch(() => {});
       })
-      .catch((error) => {});
+      .catch(() => {});
   };
 
   return (

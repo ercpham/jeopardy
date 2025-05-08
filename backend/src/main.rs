@@ -10,7 +10,7 @@ use tower_http::cors::{Any, CorsLayer};
 use std::net::SocketAddr;
 use std::env;
 use std::time::Duration;
-use tokio::sync::Mutex as AsyncMutex;
+use tokio::sync::{Mutex as AsyncMutex, RwLock};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
@@ -18,7 +18,7 @@ use crate::routes::{start_session, get_session_id, get_session_scores, modify_se
 use crate::utils::cleanup_sessions;
 use crate::models::{Session};
 
-static SESSIONS: Lazy<AsyncMutex<HashMap<String, Session>>> = Lazy::new(|| AsyncMutex::new(HashMap::new()));
+static SESSIONS: Lazy<RwLock<HashMap<String, AsyncMutex<Session>>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 
 /// Main function to start the server.
 /// 
