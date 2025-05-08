@@ -1,44 +1,37 @@
 /**
  * Score component displays the scores for three teams.
- * 
+ *
  * Props:
  * - `team1`: The score for team 1.
  * - `team2`: The score for team 2.
  * - `team3`: The score for team 3.
- * 
+ *
  * Features:
  * - Displays the scores for each team in a styled container.
  */
 
 import React, { useState } from "react";
-import { useScore } from "../context/ScoreContext";
+import { Team } from "../context/TeamContext";
 
 const Score: React.FC<{
-  score: number;
-  modifyScore: (newScore: number) => void;
-}> = ({ score, modifyScore }) => {
-  const { loading } = useScore();
+  team: Team;
+  modifyTeam: (updatedTeam: Team) => void;
+}> = ({ team, modifyTeam }) => {
   const [inputValue, setInputValue] = useState<number>(0);
 
   const handleAdd = () => {
-    modifyScore(score + inputValue);
+    modifyTeam({ ...team, score: team.score + inputValue });
   };
 
   const handleSubtract = () => {
-    modifyScore(score - inputValue);
+    modifyTeam({ ...team, score: team.score + inputValue });
   };
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
-        Loading scores...
-      </div>
-    );
-  }
 
   return (
     <div style={{ textAlign: "center", marginTop: "20px" }}>
-      <h2>Team Score: {score}</h2>
+      <h2>
+        {team.team_name} Score: {team.score}
+      </h2>
       <div>
         <input
           type="number"

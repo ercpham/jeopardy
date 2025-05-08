@@ -1,6 +1,6 @@
 /**
  * App component serves as the root of the application.
- * 
+ *
  * Features:
  * - Wraps the application with context providers for session, score, and questions.
  * - Sets up routing for the Home and QuestionPage components.
@@ -11,13 +11,13 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
 import Score from "./components/Score";
-import { useScore } from "./context/ScoreContext";
+import { Team, useTeam } from "./context/TeamContext";
 import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
 import { useSession } from "./context/SessionContext";
 
 const App: React.FC = () => {
-  const { scores, modifyScores } = useScore();
+  const { teams, modifyTeam, loading } = useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells } = useBoard();
   const { sessionId, startSession, closeSession, joinSession } = useSession();
@@ -35,10 +35,21 @@ const App: React.FC = () => {
     setShowScores((prev) => !prev);
   };
 
+  const resetTeams = () => {
+    const defaultTeams = [
+      { team_name: "Team 1", score: 0, buzz_lock_owned: false },
+      { team_name: "Team 2", score: 0, buzz_lock_owned: false },
+      { team_name: "Team 3", score: 0, buzz_lock_owned: false },
+    ];
+    defaultTeams.forEach((team, index) => {
+      modifyTeam(team, index);
+    });
+  };
+
   const handleResetBoardState = () => {
     resetQuestions();
     resetClickedCells();
-    modifyScores({ team1: 0, team2: 0, team3: 0 });
+    resetTeams();
     setBoardKey((prevKey) => prevKey + 1);
     setTriggerAnimation(true);
     setTimeout(() => {
@@ -141,36 +152,23 @@ const App: React.FC = () => {
         </Routes>
         {showScores && (
           <div className="score-container">
-            <Score
-              score={scores.team1}
-              modifyScore={(newScore: number) =>
-                modifyScores({
-                  team1: newScore,
-                  team2: scores.team2,
-                  team3: scores.team3,
-                })
-              }
-            />
-            <Score
-              score={scores.team2}
-              modifyScore={(newScore: number) =>
-                modifyScores({
-                  team1: scores.team1,
-                  team2: newScore,
-                  team3: scores.team3,
-                })
-              }
-            />
-            <Score
-              score={scores.team3}
-              modifyScore={(newScore: number) =>
-                modifyScores({
-                  team1: scores.team1,
-                  team2: scores.team2,
-                  team3: newScore,
-                })
-              }
-            />
+            {teams.map((team, index) => (
+              <div>
+                {loading ? (
+                  <div
+                    key={index}
+                    style={{ textAlign: "center", marginTop: "20px" }}
+                  >
+                    Loading scores...
+                  </div>
+                ) : (
+                  <Score
+                    team={team}
+                    modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, index)}
+                  />
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

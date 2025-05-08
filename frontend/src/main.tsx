@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { BoardProvider } from "./context/BoardContext";
 import { QuestionsProvider } from "./context/QuestionsContext";
-import { ScoreProvider } from "./context/ScoreContext";
+import { ScoreProvider } from "./context/TeamContext";
 import { SessionProvider } from "./context/SessionContext";
 import "./styles/App.css";
 
