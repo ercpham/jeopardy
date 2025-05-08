@@ -38,20 +38,33 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let app = Router::new()
-        .route("/session/start", axum::routing::post(start_session))
-        .route("/session/:id", axum::routing::get(get_session_id))
-        .route(
-            "/session/:id/scores",
+    let routes = vec![
+        ("/session/start", axum::routing::post(start_session)),
+        ("/session/:id", axum::routing::get(get_session_id)),
+        (
+            "/session/:id/teams",
             axum::routing::get(get_session_team_info),
-        )
-        .route(
-            "/session/:id/modify",
-            axum::routing::post(modify_session_team_info),
-        )
-        .route("/session/:id/:index", axum::routing::post(set_buzz_lock_owned))
-        .route("/session/:id/release", axum::routing::post(release_buzz_lock))
-        .route("/session/:id/close", axum::routing::post(close_session))
+        ),
+        (
+            "/session/:id/teams/:index",
+            axum::routing::put(modify_session_team_info),
+        ),
+        ("/session/:id/close", axum::routing::post(close_session)),
+        (
+            "/session/:id/buzz/release",
+            axum::routing::post(release_buzz_lock),
+        ),
+        (
+            "/session/:id/buzz/:index",
+            axum::routing::post(set_buzz_lock_owned),
+        ),
+    ];
+
+    let app = routes
+        .into_iter()
+        .fold(Router::new(), |router, (path, method)| {
+            router.route(path, method)
+        })
         .layer(cors);
 
     tokio::spawn(async {
