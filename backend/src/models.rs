@@ -1,11 +1,11 @@
 //! Data models for the Bible Challenge backend server.
 //! This module defines the structures used for sessions, scores, and questions.
 
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 /// Represents a question in the Bible Challenge.
-/// 
+///
 /// Fields:
 /// - `id`: Unique identifier for the question.
 /// - `question_text`: The text of the question.
@@ -21,26 +21,28 @@ pub struct Question {
     pub revealed: bool,
 }
 
-/// Represents the scores for a session.
-/// 
+/// Represents a team in the Bible Challenge.
+///
 /// Fields:
-/// - `team1`: Score for team 1.
-/// - `team2`: Score for team 2.
-/// - `team3`: Score for team 3.
+/// - `team_name`: The name of the team.
+/// - `score`: The score of the team.
+/// - `buzz_lock_owned`: Whether the team owns the buzz lock.
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Scores {
-    pub team1: i32,
-    pub team2: i32,
-    pub team3: i32,
+pub struct Team {
+    pub team_name: String,
+    pub score: u32,
+    pub buzz_lock_owned: bool,
 }
 
 /// Represents a session in the Bible Challenge.
-/// 
+///
 /// Fields:
-/// - `scores`: The scores for the session.
+/// - `teams`: The list of teams participating in the session.
+/// - `buzz_lock`: Whether the buzz lock is currently active.
 /// - `created_at`: The timestamp when the session was created.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Session {
-    pub scores: Scores,
+    pub teams: Vec<Team>,
+    pub buzz_lock: bool,
     pub created_at: DateTime<Utc>,
 }
