@@ -17,7 +17,7 @@ import { useBoard } from "./context/BoardContext";
 import { useSession } from "./context/SessionContext";
 
 const App: React.FC = () => {
-  const { teams, modifyTeam, loading } = useTeam();
+  const { teams, modifyTeam, buzzIn, releaseBuzzLock, loading } = useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells } = useBoard();
   const { sessionId, startSession, closeSession, joinSession } = useSession();
@@ -141,6 +141,20 @@ const App: React.FC = () => {
         >
           ☰
         </button>
+        <button
+          onClick={releaseBuzzLock}
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+          }}
+          aria-label="Release Buzz Lock"
+        >
+          <span role="img" aria-label="Unlocked Padlock">🔓</span>
+        </button>
         <Routes>
           <Route
             path="/"
@@ -153,19 +167,17 @@ const App: React.FC = () => {
         {showScores && (
           <div className="score-container">
             {teams.map((team, index) => (
-              <div>
+              <div key={index} style={{ textAlign: "center", marginTop: "20px" }}>
                 {loading ? (
-                  <div
-                    key={index}
-                    style={{ textAlign: "center", marginTop: "20px" }}
-                  >
-                    Loading scores...
-                  </div>
+                  <div>Loading scores...</div>
                 ) : (
-                  <Score
-                    team={team}
-                    modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, index)}
-                  />
+                  <div className={`score ${team.buzz_lock_owned ? 'buzz-lock-owned' : ''}`}>
+                    <Score
+                      team={team}
+                      modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, index)}
+                    />
+                    <button onClick={() => buzzIn(index)}>Buzz</button>
+                  </div>
                 )}
               </div>
             ))}

@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { BoardProvider } from "./context/BoardContext";
 import { QuestionsProvider } from "./context/QuestionsContext";
-import { ScoreProvider } from "./context/TeamContext";
+import { TeamProvider } from "./context/TeamContext";
 import { SessionProvider } from "./context/SessionContext";
 import "./styles/App.css";
 
@@ -16,13 +16,13 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <SessionProvider>
-        <ScoreProvider>
+        <TeamProvider>
           <QuestionsProvider>
             <BoardProvider>
               <App />
             </BoardProvider>
           </QuestionsProvider>
-        </ScoreProvider>
+        </TeamProvider>
       </SessionProvider>
     </BrowserRouter>
   </React.StrictMode>

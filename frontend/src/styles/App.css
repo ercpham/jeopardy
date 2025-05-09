@@ -160,3 +160,8 @@ button:active {
   /* Match the width of the board */
   height: 15vh;
 }
+
+/* Add a blue border to the Score component when buzz_lock_owned is true */
+.score.buzz-lock-owned {
+  border: 2px solid blue;
+}
