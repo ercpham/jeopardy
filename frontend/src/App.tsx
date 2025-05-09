@@ -10,7 +10,7 @@ import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
-import Score from "./components/Score";
+import BuzzerPage from "./pages/BuzzerPage";
 import ScoreContainer from "./components/ScoreContainer";
 import { useTeam } from "./context/TeamContext";
 import { useQuestions } from "./context/QuestionsContext";
@@ -23,11 +23,13 @@ const App: React.FC = () => {
     useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells } = useBoard();
-  const { sessionId, startSession, closeSession, joinSession } = useSession();
+  const { sessionId, startSession, closeSession, joinSession, setSessionId } =
+    useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScores, setShowScores] = useState(false);
   const [triggerAnimation, setTriggerAnimation] = useState(false);
   const [boardKey, setBoardKey] = useState(0);
+  const [player, setPlayer] = useState(false);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -35,6 +37,16 @@ const App: React.FC = () => {
 
   const toggleScores = () => {
     setShowScores((prev) => !prev);
+  };
+
+  const handleJoinSession = (sessionId: string) => {
+    setPlayer(true);
+    joinSession(sessionId);
+  };
+
+  const handleLeaveSession = () => {
+    setPlayer(false);
+    setSessionId(null);
   };
 
   const resetTeams = () => {
@@ -66,10 +78,12 @@ const App: React.FC = () => {
         menuOpen={menuOpen}
         startSession={startSession}
         closeSession={closeSession}
-        joinSession={joinSession}
+        joinSession={handleJoinSession}
+        leaveSession={handleLeaveSession}
         toggleScores={toggleScores}
         setQuestions={setQuestions}
         handleResetBoardState={handleResetBoardState}
+        player={player}
       />
       <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
         <button
@@ -79,7 +93,7 @@ const App: React.FC = () => {
         >
           ☰
         </button>
-        {buzzLock && (
+        {buzzLock && !player && (
           <button
             onClick={releaseBuzzLock}
             className={"lock-button"}
@@ -90,20 +104,23 @@ const App: React.FC = () => {
             </span>
           </button>
         )}
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Home triggerAnimation={triggerAnimation} boardKey={boardKey} />
-            }
-          />
-          <Route path="/question/:id" element={<QuestionPage />} />
-        </Routes>
+        {player ? (
+          <BuzzerPage buzzIn={buzzIn} teams={teams} />
+        ) : (
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home triggerAnimation={triggerAnimation} boardKey={boardKey} />
+              }
+            />
+            <Route path="/question/:id" element={<QuestionPage />} />
+          </Routes>
+        )}
         {showScores && (
           <ScoreContainer
             teams={teams}
             loading={loading}
-            buzzIn={buzzIn}
             modifyTeam={modifyTeam}
           />
         )}

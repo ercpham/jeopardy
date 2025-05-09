@@ -1,0 +1,50 @@
+.buzzer-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  height: 80vh;
+  width: 100vw;
+  position: relative;
+}
+
+.team-selector {
+  position: absolute;
+  top: 2rem;
+  right: 4rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-selector select {
+  padding: 5px;
+  font-size: 1rem;
+}
+
+.buzzer-button {
+  width: 20rem;
+  height: 20rem;
+  border-radius: 50%;
+  background-color: #ff4d4d;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.buzzer-button:hover {
+  transform: scale(1.1);
+  background-color: #ff4d4d;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.buzzer-button:active {
+  transform: scale(0.95);
+  background-color: #ff4d4d;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

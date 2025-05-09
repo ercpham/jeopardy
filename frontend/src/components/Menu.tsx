@@ -7,9 +7,11 @@ interface MenuProps {
   startSession: () => void;
   closeSession: () => void;
   joinSession: (sessionId: string) => void;
+  leaveSession: () => void;
   toggleScores: () => void;
   setQuestions: (questions: any[]) => void;
   handleResetBoardState: () => void;
+  player: boolean;
 }
 
 const Menu: React.FC<MenuProps> = ({
@@ -18,9 +20,11 @@ const Menu: React.FC<MenuProps> = ({
   startSession,
   closeSession,
   joinSession,
+  leaveSession,
   toggleScores,
   setQuestions,
   handleResetBoardState,
+  player,
 }) => {
   const [joinSessionId, setJoinSessionId] = useState("");
 
@@ -78,8 +82,22 @@ const Menu: React.FC<MenuProps> = ({
         </li>
         <li onClick={handleResetBoardState}>Reset Board State</li>
         <li onClick={toggleScores}>Toggle Scores</li>
-        <li onClick={sessionId ? closeSession : startSession}>
-          {sessionId ? "Close Session" : "Start Session"}
+        <li
+          onClick={() => {
+            if (sessionId && player) {
+              leaveSession(); // Leave session if sessionId and player are true
+            } else if (sessionId) {
+              closeSession(); // Close session if only sessionId is true
+            } else {
+              startSession(); // Start session if sessionId is false
+            }
+          }}
+        >
+          {sessionId && player
+            ? "Leave Session"
+            : sessionId
+              ? "Close Session"
+              : "Start Session"}
         </li>
         <li className="session-join-container">
           {!sessionId && (

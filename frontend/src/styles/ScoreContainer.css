@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-around;
   width: 80vw;
-  height: 100vh; /* Extend to the bottom of the screen */
+  height: 20vh; /* Extend to the bottom of the screen */
   z-index: 100;
   overflow: hidden;
 }

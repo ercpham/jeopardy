@@ -6,14 +6,12 @@ import "../styles/ScoreContainer.css";
 interface ScoreContainerProps {
   teams: Team[];
   loading: boolean;
-  buzzIn: (index: number) => void;
   modifyTeam: (updatedTeam: Team, index: number) => void;
 }
 
 const ScoreContainer: React.FC<ScoreContainerProps> = ({
   teams,
   loading,
-  buzzIn,
   modifyTeam,
 }) => {
   return (
