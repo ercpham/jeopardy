@@ -73,48 +73,6 @@ button:active {
   transform: scale(1.4);
 }
 
-.menu {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 18rem;
-  height: 100%;
-  background-color: #ffffff;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  z-index: 999;
-  padding: 20px;
-  box-sizing: border-box;
-  transform: translateX(-100%);
-}
-
-.menu.open {
-  transform: translateX(0);
-}
-
-.menu label {
-  cursor: pointer;
-}
-
-.menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.menu li {
-  font-size: 1.2rem;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  margin: 20px 0;
-  transition: color 0.4s ease;
-}
-
-.menu li:hover {
-  color: #005ec2;
-}
-
 /* Ensure the session-join-container fits completely inside the menu */
 .session-join-container {
   position: absolute;

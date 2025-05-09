@@ -14,6 +14,7 @@ export interface Team {
 
 interface TeamContextProps {
   teams: Team[];
+  buzzLock: boolean;
   modifyTeam: (team: Team, index: number) => void;
   releaseBuzzLock: () => void;
   buzzIn: (index: number) => void;
@@ -61,6 +62,11 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
       .then((data) => {
         setTeams(data || defaultTeams);
         setLoading(false);
+        if (data.some((team: Team) => team.buzz_lock_owned)) {
+          setBuzzLock(true);
+        } else {
+          setBuzzLock(false);
+        }
       });
   };
 
@@ -213,7 +219,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <TeamContext.Provider
-      value={{ teams, modifyTeam, releaseBuzzLock, buzzIn, loading }}
+      value={{ teams, buzzLock, modifyTeam, releaseBuzzLock, buzzIn, loading }}
     >
       {children}
     </TeamContext.Provider>
