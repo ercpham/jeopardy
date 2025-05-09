@@ -24,7 +24,7 @@ const Score: React.FC<{
   };
 
   const handleSubtract = () => {
-    modifyTeam({ ...team, score: team.score + inputValue });
+    modifyTeam({ ...team, score: team.score - inputValue });
   };
 
   return (

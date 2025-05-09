@@ -11,7 +11,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
 import Score from "./components/Score";
-import { Team, useTeam } from "./context/TeamContext";
+import { useTeam } from "./context/TeamContext";
 import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
 import { useSession } from "./context/SessionContext";

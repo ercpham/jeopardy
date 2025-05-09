@@ -30,7 +30,7 @@ pub struct Question {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Team {
     pub team_name: String,
-    pub score: u32,
+    pub score: i32,
     pub buzz_lock_owned: bool,
 }
 

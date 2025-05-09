@@ -175,15 +175,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
         setTeams((prevTeams) =>
           prevTeams.map((t, i) => (i === index ? data : t))
         );
-
-        fetch(`${API_URL}/session/${sessionId}/scores`)
-          .then((response) => response.json())
-          .then((data) => {
-            setTeams((prevTeams) =>
-              prevTeams.map((t, i) => (i === index ? data : t))
-            );
-          })
-          .catch(() => {});
       })
       .catch(() => {});
     fetchTeams();
