@@ -1,0 +1,19 @@
+.score-container {
+  display: flex;
+  justify-content: space-around;
+  width: 80vw;
+  height: 100vh; /* Extend to the bottom of the screen */
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Add a blue border to the Score component when buzz_lock_owned is true */
+.score.buzz-lock-owned {
+  border: 2px solid blue;
+}
+
+.score {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+}

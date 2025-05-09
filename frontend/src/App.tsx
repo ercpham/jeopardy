@@ -11,6 +11,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
 import Score from "./components/Score";
+import ScoreContainer from "./components/ScoreContainer";
 import { useTeam } from "./context/TeamContext";
 import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
@@ -81,14 +82,7 @@ const App: React.FC = () => {
         {buzzLock && (
           <button
             onClick={releaseBuzzLock}
-            style={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-            }}
+            className={"lock-button"}
             aria-label="Release Buzz Lock"
           >
             <span role="img" aria-label="Unlocked Padlock">
@@ -106,30 +100,12 @@ const App: React.FC = () => {
           <Route path="/question/:id" element={<QuestionPage />} />
         </Routes>
         {showScores && (
-          <div className="score-container">
-            {teams.map((team, index) => (
-              <div
-                key={index}
-                style={{ textAlign: "center", marginTop: "20px" }}
-              >
-                {loading ? (
-                  <div>Loading scores...</div>
-                ) : (
-                  <div
-                    className={`score ${team.buzz_lock_owned ? "buzz-lock-owned" : ""}`}
-                  >
-                    <Score
-                      team={team}
-                      modifyTeam={(updatedTeam) =>
-                        modifyTeam(updatedTeam, index)
-                      }
-                    />
-                    <button onClick={() => buzzIn(index)}>Buzz</button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <ScoreContainer
+            teams={teams}
+            loading={loading}
+            buzzIn={buzzIn}
+            modifyTeam={modifyTeam}
+          />
         )}
       </div>
     </>

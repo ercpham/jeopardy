@@ -39,6 +39,19 @@ button:active {
   background-color: #d8d8d8;
 }
 
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
 .routeContainer {
   display: flex;
   flex-direction: column;
@@ -47,7 +60,7 @@ button:active {
   height: 100vh;
   /* Full viewport height */
   width: 100vw;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s;
   position: relative;
   /* Make it a positioning context for the hamburger button */
 }
@@ -73,53 +86,12 @@ button:active {
   transform: scale(1.4);
 }
 
-/* Ensure the session-join-container fits completely inside the menu */
-.session-join-container {
+.lock-button {
   position: absolute;
-  bottom: 0;
-  width: calc(100% - 40px);
-  /* Adjust width to account for menu padding */
-  background-color: #f9f9f9;
-  padding: 10px;
-  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
-  margin: 0 20px;
-  /* Match the menu's horizontal padding */
-  box-sizing: border-box;
-  /* Include padding and border in width calculation */
-  border-radius: 5px;
-}
-
-/* Style the session-input-wrapper to align with other list items */
-.session-input-wrapper {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.session-input-wrapper input {
-  flex: 1;
-  padding: 10px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.session-input-wrapper button {
-  padding: 10px 10px;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  background: white;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
-}
-
-.score-container {
-  display: flex;
-  justify-content: space-around;
-  width: 80vw;
-  /* Match the width of the board */
-  height: 15vh;
-}
-
-/* Add a blue border to the Score component when buzz_lock_owned is true */
-.score.buzz-lock-owned {
-  border: 2px solid blue;
 }

@@ -1,0 +1,42 @@
+import React from "react";
+import Score from "./Score";
+import { Team } from "../context/TeamContext";
+import "../styles/ScoreContainer.css";
+
+interface ScoreContainerProps {
+  teams: Team[];
+  loading: boolean;
+  buzzIn: (index: number) => void;
+  modifyTeam: (updatedTeam: Team, index: number) => void;
+}
+
+const ScoreContainer: React.FC<ScoreContainerProps> = ({
+  teams,
+  loading,
+  buzzIn,
+  modifyTeam,
+}) => {
+  return (
+    <div className="score-container">
+      {teams.map((team, index) => (
+        <div
+          key={index}
+          style={{ display: "flex" }}
+        >
+          {loading ? (
+            <div>Loading scores...</div>
+          ) : (
+              <Score
+                team={team}
+                modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, index)}
+              />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+              
+{/* <button onClick={() => buzzIn(index)}>Buzz</button> */}
+
+export default ScoreContainer;

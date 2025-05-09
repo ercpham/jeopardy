@@ -12,6 +12,7 @@
 
 import React, { useState } from "react";
 import { Team } from "../context/TeamContext";
+import "../styles/Score.css";
 
 const Score: React.FC<{
   team: Team;
@@ -28,21 +29,20 @@ const Score: React.FC<{
   };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "20px" }}>
-      <h2>
-        {team.team_name} Score: {team.score}
-      </h2>
-      <div>
+    <div className={`scorecard ${team.buzz_lock_owned ? "active" : ""}`}>
+      <h3>
+        {team.team_name}
+      </h3>
+      <h1>{team.score}</h1>
+      <div className="score-controls">
+        <button onClick={handleAdd}>+</button>
         <input
           type="number"
           value={inputValue}
           onChange={(e) => setInputValue(Number(e.target.value))}
-          style={{ marginRight: "10px" }}
+          className="score-input"
         />
-        <button onClick={handleAdd}>Add</button>
-        <button onClick={handleSubtract} style={{ marginLeft: "10px" }}>
-          Subtract
-        </button>
+        <button onClick={handleSubtract}>-</button>
       </div>
     </div>
   );

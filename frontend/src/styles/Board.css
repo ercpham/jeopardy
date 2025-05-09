@@ -5,9 +5,8 @@
   grid-template-rows: repeat(5, 1fr);
   /* 5 rows */
   width: 80vw;
-  /* Full viewport width */
   height: 80vh;
-  /* Full viewport height */
+  padding-top: 1rem;
   gap: 10px;
   /* Space between buttons */
   box-sizing: border-box;
