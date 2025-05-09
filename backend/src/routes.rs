@@ -6,6 +6,7 @@ use crate::models::{Session, Team};
 use axum::http::StatusCode;
 use axum::{Json, extract::Path};
 use chrono::Utc;
+use rand::{Rng, distr::Alphabetic};
 use tokio::sync::Mutex as AsyncMutex;
 
 /// Starts a new session and returns the session ID.
@@ -17,7 +18,13 @@ use tokio::sync::Mutex as AsyncMutex;
 /// Returns:
 /// - `Json<String>`: The session ID as a JSON response.
 pub async fn start_session() -> Json<String> {
-    let session_id = uuid::Uuid::new_v4().to_string();
+    let session_id: String = rand::rng()
+        .sample_iter(&Alphabetic)
+        .take(4)
+        .map(char::from)
+        .collect();
+    let mut session_id = session_id.to_uppercase();
+
     let session = Session {
         created_at: Utc::now(),
         buzz_lock: false,
@@ -40,6 +47,17 @@ pub async fn start_session() -> Json<String> {
         ],
     };
     let mut sessions = SESSIONS.write().await;
+
+    // Ensure the session ID is unique
+    while sessions.contains_key(&session_id) {
+        session_id = rand::rng()
+            .sample_iter(&Alphabetic)
+            .take(4)
+            .map(char::from)
+            .collect();
+        session_id = session_id.to_uppercase();
+    }
+
     sessions.insert(session_id.clone(), AsyncMutex::new(session));
     Json(session_id)
 }
