@@ -106,7 +106,10 @@ const Menu: React.FC<MenuProps> = ({
                 type="text"
                 placeholder="Enter Session ID"
                 value={joinSessionId}
-                onChange={(e) => setJoinSessionId(e.target.value)}
+                onChange={(e) => {
+                  const input = e.target.value.toUpperCase().replace(/[^A-Z]/g, ""); // Convert to uppercase and remove non-alphabetic characters
+                  setJoinSessionId(input);
+                }}
               />
               <button onClick={handleJoinSession}>Join Session</button>
             </div>
