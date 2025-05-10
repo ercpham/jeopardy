@@ -9,6 +9,10 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface BoardContextType {
   clickedCells: Set<string>;
   setClickedCells: React.Dispatch<React.SetStateAction<Set<string>>>;
+  recentlyClickedIndex: number | null;
+  setRecentlyClickedIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  targetScore: number | null; // Add targetScore to the context
+  setTargetScore: React.Dispatch<React.SetStateAction<number | null>>; // Add setter for targetScore
   resetClickedCells: () => void;
 }
 
@@ -24,6 +28,8 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [clickedCells, setClickedCells] = useState<Set<string>>(new Set());
+  const [recentlyClickedIndex, setRecentlyClickedIndex] = useState<number | null>(null);
+  const [targetScore, setTargetScore] = useState<number | null>(null); // Initialize targetScore state
 
   /**
    * Resets the clicked cells to an empty set.
@@ -34,7 +40,15 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <BoardContext.Provider
-      value={{ clickedCells, setClickedCells, resetClickedCells }}
+      value={{
+        clickedCells,
+        setClickedCells,
+        recentlyClickedIndex,
+        setRecentlyClickedIndex,
+        targetScore,
+        setTargetScore, // Provide setTargetScore in the context
+        resetClickedCells,
+      }}
     >
       {children}
     </BoardContext.Provider>
@@ -47,7 +61,7 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
  * Throws an error if used outside of a BoardProvider.
  * 
  * Returns:
- * - `BoardContextType`: The context value containing clickedCells, setClickedCells, and resetClickedCells.
+ * - `BoardContextType`: The context value containing clickedCells, setClickedCells, recentlyClickedIndex, setRecentlyClickedIndex, targetScore, setTargetScore, and resetClickedCells.
  */
 export const useBoard = (): BoardContextType => {
   const context = useContext(BoardContext);

@@ -19,7 +19,7 @@ const ScoreContainer: React.FC<ScoreContainerProps> = ({
       {teams.map((team, index) => (
         <div
           key={index}
-          style={{ display: "flex" }}
+          className ={"wrapper"}
         >
           {loading ? (
             <div>Loading scores...</div>

@@ -1,28 +1,35 @@
-/* Import the Google Font Lato */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
-/* Apply the Lato font to the entire application */
 body,
 html {
   font-family: 'Lato', Arial, sans-serif;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
-  /* Disable horizontal scrolling */
   width: 100%;
-  /* Ensure the body and html take up the full width */
   background-color: #f7f7f7;
 }
 
 h1 {
   text-align: center;
-  color: #333;
+  font-size: calc(1.5rem + 1vw);
+}
+
+h2 {
+  font-size: calc(1.25rem + 0.8vw);
+}
+
+h3 {
+  font-size: calc(1.25rem + 0.8vw);
+  font-weight: normal;
+}
+
+h4 {
+  font-size: calc(1rem + 0.3vw);
 }
 
 button {
-  font-size: 1rem;
+  font-size: calc(1.4rem + 0.5vw);
   background-color: #ffffff;
-  color: rgb(60, 60, 60);
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -39,14 +46,21 @@ button:active {
   background-color: #d8d8d8;
 }
 
-/* Chrome, Safari, Edge, Opera */
+li {
+  font-size: calc(0.85rem + 0.4vw);
+  list-style: none;
+}
+
+input {
+  font-size: calc(0.5rem + 0.5vw);
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Firefox */
 input[type=number] {
   appearance: textfield;
   -moz-appearance: textfield;
@@ -58,11 +72,9 @@ input[type=number] {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  /* Full viewport height */
   width: 100vw;
   transition: margin-left 0.3s;
   position: relative;
-  /* Make it a positioning context for the hamburger button */
 }
 
 .routeContainer.shifted {
@@ -73,12 +85,10 @@ input[type=number] {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  font-size: 1.5rem;
   background: none;
   z-index: 1000;
   box-shadow: none;
   transition: transform 0.3s ease, left 0.3s ease;
-  /* Add transition for left */
 }
 
 .hamburger-button:hover {
@@ -88,10 +98,8 @@ input[type=number] {
 
 .lock-button {
   position: absolute;
-  top: 1rem;
+  bottom: 1rem;
   right: 1rem;
-  font-size: 1.5rem;
-  background: white;
   border: none;
   cursor: pointer;
 }

@@ -52,8 +52,8 @@ const Question: React.FC<{
         <h2>{questionText}</h2>
         {revealed ? (
           <>
-            <p className="answer">{answerText}</p>
-            <p className="reference">{referenceText}</p>
+            <h3 className="answer">{answerText}</h3>
+            <h3 className="reference">{referenceText}</h3>
           </>
         ) : (
           <button className="reveal-button" onClick={onRevealAnswer}>

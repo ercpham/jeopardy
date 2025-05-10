@@ -20,7 +20,6 @@
 
 .team-selector select {
   padding: 5px;
-  font-size: 1rem;
 }
 
 .buzzer-button {
@@ -29,7 +28,6 @@
   border-radius: 50%;
   background-color: #ff4d4d;
   color: white;
-  font-size: 2rem;
   font-weight: bold;
   border: none;
   cursor: pointer;

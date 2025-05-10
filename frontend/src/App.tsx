@@ -6,7 +6,7 @@
  * - Sets up routing for the Home and QuestionPage components.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
@@ -19,10 +19,10 @@ import { useSession } from "./context/SessionContext";
 import Menu from "./components/Menu";
 
 const App: React.FC = () => {
-  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, loading } =
+  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, setHasPlayedBuzzer, loading } =
     useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
-  const { resetClickedCells } = useBoard();
+  const { resetClickedCells, setRecentlyClickedIndex } = useBoard();
   const { sessionId, startSession, closeSession, joinSession, setSessionId } =
     useSession();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,6 +30,12 @@ const App: React.FC = () => {
   const [triggerAnimation, setTriggerAnimation] = useState(false);
   const [boardKey, setBoardKey] = useState(0);
   const [player, setPlayer] = useState(false);
+
+  useEffect(() => {
+    if (sessionId === null) {
+      setPlayer(false);
+    }
+  }, [sessionId]);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -41,13 +47,20 @@ const App: React.FC = () => {
 
   const handleJoinSession = (sessionId: string) => {
     setPlayer(true);
+    setHasPlayedBuzzer(true);
     joinSession(sessionId);
   };
 
   const handleLeaveSession = () => {
     setPlayer(false);
+    setHasPlayedBuzzer(false);
     setSessionId(null);
   };
+
+  const handleStartSession = () => {
+    setShowScores(true);
+    startSession();
+  }
 
   const resetTeams = () => {
     const defaultTeams = [
@@ -64,6 +77,7 @@ const App: React.FC = () => {
     resetQuestions();
     resetClickedCells();
     resetTeams();
+    setRecentlyClickedIndex(null);
     setBoardKey((prevKey) => prevKey + 1);
     setTriggerAnimation(true);
     setTimeout(() => {
@@ -76,7 +90,7 @@ const App: React.FC = () => {
       <Menu
         sessionId={sessionId}
         menuOpen={menuOpen}
-        startSession={startSession}
+        startSession={handleStartSession}
         closeSession={closeSession}
         joinSession={handleJoinSession}
         leaveSession={handleLeaveSession}
