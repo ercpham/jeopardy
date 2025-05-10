@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import "../styles/BuzzerPage.css";
-import { Team } from "../context/TeamContext";
+import { Team, useTeam } from "../context/TeamContext";
 
 interface BuzzerPageProps {
   buzzIn: (teamIndex: number) => void;
@@ -8,14 +8,14 @@ interface BuzzerPageProps {
 }
 
 const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
-  const [currentTeam, setCurrentTeam] = useState(0);
+  const {selectedTeam, setSelectedTeam } = useTeam();
 
   const handleBuzz = () => {
-    buzzIn(currentTeam);
+    buzzIn(selectedTeam);
   };
 
   const handleTeamChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCurrentTeam(Number(event.target.value));
+    setSelectedTeam(Number(event.target.value));
   };
 
   return (
@@ -24,7 +24,7 @@ const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
         <label htmlFor="team-select">Select Team: </label>
         <select
           id="team-select"
-          value={currentTeam}
+          value={selectedTeam}
           onChange={handleTeamChange}
         >
           {teams.map((team, index) => (

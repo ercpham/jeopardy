@@ -1,40 +1,51 @@
 import React from "react";
 import Score from "./Score";
-import { Team } from "../context/TeamContext";
+import { Team, useTeam } from "../context/TeamContext";
 import "../styles/ScoreContainer.css";
 
 interface ScoreContainerProps {
   teams: Team[];
   loading: boolean;
+  player: boolean;
   modifyTeam: (updatedTeam: Team, index: number) => void;
 }
 
 const ScoreContainer: React.FC<ScoreContainerProps> = ({
   teams,
   loading,
+  player,
   modifyTeam,
 }) => {
+  const { selectedTeam } = useTeam();
   return (
     <div className="score-container">
-      {teams.map((team, index) => (
-        <div
-          key={index}
-          className ={"wrapper"}
-        >
-          {loading ? (
-            <div>Loading scores...</div>
-          ) : (
+      {player ? (
+        <div key={selectedTeam} className="wrapper">
+          <Score
+            key={selectedTeam} // Use selectedTeam as the key to force rerender
+            team={teams[selectedTeam]}
+            controls={!player}
+            modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, selectedTeam)}
+          />
+        </div>
+      ) : (
+        teams.map((team, index) => (
+          <div key={index} className="wrapper">
+            {loading ? (
+              <div>Loading scores...</div>
+            ) : (
               <Score
+                key={index} // Ensure each Score has a unique key
                 team={team}
+                controls={!player}
                 modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, index)}
               />
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        ))
+      )}
     </div>
   );
 };
-              
-{/* <button onClick={() => buzzIn(index)}>Buzz</button> */}
 
 export default ScoreContainer;

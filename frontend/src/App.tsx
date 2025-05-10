@@ -19,7 +19,7 @@ import { useSession } from "./context/SessionContext";
 import Menu from "./components/Menu";
 
 const App: React.FC = () => {
-  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, setHasPlayedBuzzer, loading } =
+  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, hasPlayedBuzzerRef, loading } =
     useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells, setRecentlyClickedIndex } = useBoard();
@@ -47,13 +47,13 @@ const App: React.FC = () => {
 
   const handleJoinSession = (sessionId: string) => {
     setPlayer(true);
-    setHasPlayedBuzzer(true);
+    hasPlayedBuzzerRef.current = true;
     joinSession(sessionId);
   };
 
   const handleLeaveSession = () => {
     setPlayer(false);
-    setHasPlayedBuzzer(false);
+    hasPlayedBuzzerRef.current = false;
     setSessionId(null);
   };
 
@@ -80,6 +80,7 @@ const App: React.FC = () => {
     setRecentlyClickedIndex(null);
     setBoardKey((prevKey) => prevKey + 1);
     setTriggerAnimation(true);
+    releaseBuzzLock();
     setTimeout(() => {
       setTriggerAnimation(false);
     }, 10);
@@ -135,6 +136,7 @@ const App: React.FC = () => {
           <ScoreContainer
             teams={teams}
             loading={loading}
+            player={player}
             modifyTeam={modifyTeam}
           />
         )}

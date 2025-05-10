@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { useSession } from "./SessionContext";
 
 /**
@@ -18,7 +24,9 @@ interface TeamContextProps {
   modifyTeam: (team: Team, index: number) => void;
   releaseBuzzLock: () => void;
   buzzIn: (index: number) => void;
-  setHasPlayedBuzzer: React.Dispatch<React.SetStateAction<boolean>>;
+  hasPlayedBuzzerRef: React.RefObject<boolean>;
+  selectedTeam: number;
+  setSelectedTeam: React.Dispatch<React.SetStateAction<number>>;
   loading: boolean;
 }
 
@@ -44,7 +52,9 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [teams, setTeams] = useState<Team[]>(defaultTeams);
   const [buzzLock, setBuzzLock] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [hasPlayedBuzzer, setHasPlayedBuzzer] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<number>(0);
+  const hasPlayedBuzzerRef = useRef(false);
+
   const { sessionId, setSessionId } = useSession();
 
   /**
@@ -66,6 +76,11 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoading(false);
         if (data.some((team: Team) => team.buzz_lock_owned)) {
           setBuzzLock(true);
+          if (!hasPlayedBuzzerRef.current) {
+            const buzzerSound = new Audio("/sounds/buzz.mp3");
+            buzzerSound.play();
+            hasPlayedBuzzerRef.current = true;
+          }
         } else {
           setBuzzLock(false);
         }
@@ -133,8 +148,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
    * - If a session is active, sends a release request to the API and updates the team's state based on the response.
    */
   const releaseBuzzLock = () => {
-    setHasPlayedBuzzer(false);
-
     if (!sessionId) {
       setBuzzLock(false);
       setTeams((prevTeams) =>
@@ -148,6 +161,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     })
       .then(() => {
         setBuzzLock(false);
+        hasPlayedBuzzerRef.current = false;
       })
       .catch(() => {});
 
@@ -221,18 +235,19 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => clearInterval(intervalId);
   }, [sessionId]);
 
-  useEffect(() => {
-    const teamWithBuzzLock = teams.find(team => team.buzz_lock_owned);
-    if (teamWithBuzzLock && !hasPlayedBuzzer) {
-      const buzzerSound = new Audio('/sounds/buzz.mp3');
-      buzzerSound.play();
-      setHasPlayedBuzzer(true);
-    }
-  }, [teams]);
-
   return (
     <TeamContext.Provider
-      value={{ teams, buzzLock, modifyTeam, releaseBuzzLock, buzzIn, setHasPlayedBuzzer, loading }}
+      value={{
+        teams,
+        buzzLock,
+        modifyTeam,
+        releaseBuzzLock,
+        buzzIn,
+        hasPlayedBuzzerRef,
+        loading,
+        selectedTeam,
+        setSelectedTeam,
+      }}
     >
       {children}
     </TeamContext.Provider>

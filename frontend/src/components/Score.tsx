@@ -18,8 +18,9 @@ import "../styles/Score.css";
 
 const Score: React.FC<{
   team: Team;
+  controls: boolean;
   modifyTeam: (updatedTeam: Team) => void;
-}> = ({ team, modifyTeam }) => {
+}> = ({ team, controls, modifyTeam }) => {
   const [inputValue, setInputValue] = useState<number>(0);
   const { targetScore } = useBoard(); // Access targetScore from context
   const [isEditingName, setIsEditingName] = useState(false); // Track if editing team name
@@ -53,7 +54,7 @@ const Score: React.FC<{
   };
 
   return (
-    <div className={`scorecard ${team.buzz_lock_owned ? "active" : ""}`}>
+    <div className={`scorecard ${team.buzz_lock_owned ? "active" : ""} ${controls ? "" : "no-controls"}`}>
       {isEditingName ? (
         <input
           className={"team-name-input"}
@@ -65,19 +66,21 @@ const Score: React.FC<{
           autoFocus
         />
       ) : (
-        <h4 onClick={() => setIsEditingName(true)}>{teamName}</h4>
+        <h4 onClick={() => setIsEditingName(true)}>{team.team_name}</h4>
       )}
       <h1>{team.score}</h1>
-      <div className="score-controls">
-        <button onClick={handleAdd}>+</button>
-        <input
-          type="number"
-          value={inputValue}
-          onChange={(e) => setInputValue(Number(e.target.value))}
-          className="score-input"
-        />
-        <button onClick={handleSubtract}>-</button>
-      </div>
+      {controls && (
+        <div className="score-controls">
+          <button onClick={handleAdd}>+</button>
+          <input
+            type="number"
+            value={inputValue}
+            onChange={(e) => setInputValue(Number(e.target.value))}
+            className="score-input"
+          />
+          <button onClick={handleSubtract}>-</button>
+        </div>
+      )}
     </div>
   );
 };
