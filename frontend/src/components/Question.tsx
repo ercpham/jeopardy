@@ -49,17 +49,19 @@ const Question: React.FC<{
         >
           🏠
         </button>
-        <h2>{questionText}</h2>
-        {revealed ? (
-          <>
-            <h3 className="answer">{answerText}</h3>
-            <h3 className="reference">{referenceText}</h3>
-          </>
-        ) : (
-          <button className="reveal-button" onClick={onRevealAnswer}>
-            Reveal Answer
-          </button>
-        )}
+        <div className="question-content">
+          <h2 className="question-text">{questionText}</h2>
+          {revealed ? (
+            <>
+              <h3 className="answer fade-in">{answerText}</h3>
+              <h4 className="reference fade-in">{referenceText}</h4>
+            </>
+          ) : (
+            <button className="reveal-button" onClick={onRevealAnswer}>
+              Reveal Answer
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

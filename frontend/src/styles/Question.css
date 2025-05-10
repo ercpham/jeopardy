@@ -18,7 +18,7 @@
   box-shadow: 0 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.question-container h2, h3 {
+.question-container h2, h3, h4 {
   margin: .8rem;
 }
 
@@ -26,8 +26,38 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
+  padding: 0.5rem 1rem;
 }
 
-.question-wrapper button {
+.question-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.question-text {
+  margin-bottom: 1rem;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.reveal-button {
+  margin-top: 1rem;
   padding: 0.5rem 1rem;
+  font-size: calc(1.0rem + 0.5vw);
+  box-shadow: 0 0px 10px rgba(0, 0, 0, 0.3);
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 1.0s forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

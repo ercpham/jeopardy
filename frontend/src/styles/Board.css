@@ -4,7 +4,7 @@
   grid-template-rows: repeat(5, 1fr);
   width: 80vw;
   height: 80vh;
-  padding-top: 1rem;
+  padding: 1rem;
   gap: 10px;
   box-sizing: border-box;
 
@@ -52,5 +52,17 @@
   100% {
     transform: scale(1);
     background-color: white;
+  }
+}
+
+@media (min-width: 768px) {
+  .board {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 767px) {
+  .board {
+    overflow-x: scroll;
   }
 }
