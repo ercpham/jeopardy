@@ -32,11 +32,17 @@
   font-weight: bold;
   cursor: pointer;
   margin: 20px 0;
-  transition: color 0.4s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .menu li:hover {
   color: #005ec2;
+  transform: scale(1.02);
+}
+
+.menu li:active {
+  color: #003c7c;
+  transform: scale(1);
 }
 
 .session-join-container {
@@ -56,6 +62,7 @@
   align-items: center;
   flex-direction: column;
   gap: 10px;
+  cursor: default;
 }
 
 .session-input-wrapper input {
@@ -69,8 +76,8 @@
 }
 
 .session-input-wrapper button {
-  font-size: calc(0.5rem + 0.5vw);
-  padding: 10px 10px;
+  font-size: calc(0.8rem + 0.5vw);
+  padding: .8rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;

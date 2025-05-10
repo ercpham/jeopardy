@@ -7,9 +7,14 @@
   padding: 1rem;
   gap: 10px;
   box-sizing: border-box;
-
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   margin: 0;
   position: relative;
+}
+
+.board::-webkit-scrollbar {
+  display: none;
 }
 
 .board-button {

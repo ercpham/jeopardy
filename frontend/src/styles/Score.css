@@ -75,7 +75,7 @@
 }
 
 .scorecard button:last-of-type {
-  background-color: rgb(255, 80, 80);
+  background-color: #ff4d4d;
   color: white;
 }
 
@@ -85,10 +85,16 @@
 }
 
 .scorecard.no-controls h1 {
-  font-size: calc(2.5rem + 1vw);
+  font-size: 5.5rem;
+  padding-bottom: 2rem;
+}
+
+.scorecard.no-controls input {
+  font-size: 1.8rem;
 }
 
 .scorecard.no-controls h4 {
+  font-size: 2.0rem;
   margin: 0rem;
 }
 

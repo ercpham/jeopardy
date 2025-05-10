@@ -11,8 +11,11 @@
 
 .team-selector {
   position: absolute;
-  top: 2rem;
-  right: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -31,18 +34,47 @@
   font-weight: bold;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s, box-shadow 0.2s;
+  animation: pulse-shadow 1.5s infinite ease-in-out;
+}
+
+.buzzer-button.lock_owned {
+  animation: none;
+  box-shadow: 0 0px 12px 8px #c2000048;
+}
+
+.buzzer-button.lock_win {
+  box-shadow: 0 0px 12px 8px #005ec248;
 }
 
 .buzzer-button:hover {
   transform: scale(1.1);
   background-color: #ff4d4d;
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
 }
 
 .buzzer-button:active {
   transform: scale(0.95);
   background-color: #ff4d4d;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.buzzer-button.lock_owned:hover {
+  transform: none;
+  cursor: default;
+}
+
+.buzzer-button.lock_owned:active {
+  transform: none;
+}
+
+@keyframes pulse-shadow {
+  0% {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
 }

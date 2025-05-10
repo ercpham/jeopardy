@@ -8,7 +8,7 @@ interface BuzzerPageProps {
 }
 
 const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
-  const {selectedTeam, setSelectedTeam } = useTeam();
+  const {selectedTeam, setSelectedTeam, buzzLock } = useTeam();
 
   const handleBuzz = () => {
     buzzIn(selectedTeam);
@@ -34,8 +34,7 @@ const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
           ))}
         </select>
       </div>
-      <button className="buzzer-button" onClick={handleBuzz}>
-        Buzz!
+      <button className={`buzzer-button ${buzzLock ? "lock_owned" : ""} ${teams[selectedTeam].buzz_lock_owned ? "lock_win" : ""}`} onClick={handleBuzz}>
       </button>
     </div>
   );

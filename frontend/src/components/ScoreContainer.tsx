@@ -18,7 +18,7 @@ const ScoreContainer: React.FC<ScoreContainerProps> = ({
 }) => {
   const { selectedTeam } = useTeam();
   return (
-    <div className="score-container">
+    <div className={`score-container ${player ? "player" : ""}`}>
       {player ? (
         <div key={selectedTeam} className="wrapper">
           <Score
@@ -32,10 +32,10 @@ const ScoreContainer: React.FC<ScoreContainerProps> = ({
         teams.map((team, index) => (
           <div key={index} className="wrapper">
             {loading ? (
-              <div>Loading scores...</div>
+              <div className="loading-spinner"></div>
             ) : (
               <Score
-                key={index} // Ensure each Score has a unique key
+                key={index} 
                 team={team}
                 controls={!player}
                 modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, index)}

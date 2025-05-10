@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSession } from "../context/SessionContext";
 import "../styles/Menu.css";
 
 interface MenuProps {
@@ -27,6 +28,7 @@ const Menu: React.FC<MenuProps> = ({
   player,
 }) => {
   const [joinSessionId, setJoinSessionId] = useState("");
+  const { sessionLoading } = useSession();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target;
@@ -100,7 +102,7 @@ const Menu: React.FC<MenuProps> = ({
               : "Start Session"}
         </li>
         <li className="session-join-container">
-          {!sessionId && (
+          {!sessionId && !sessionLoading && (
             <div className="session-input-wrapper">
               <input
                 type="text"
@@ -113,6 +115,9 @@ const Menu: React.FC<MenuProps> = ({
               />
               <button onClick={handleJoinSession}>Join Session</button>
             </div>
+          )}
+          {!sessionId && sessionLoading && (
+            <div className="loading-spinner"></div>
           )}
           {sessionId && (
             <div className="session-id">Session ID: {sessionId}</div>

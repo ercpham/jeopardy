@@ -7,6 +7,7 @@ import React, { createContext, useContext, useState } from "react";
  */
 interface SessionContextProps {
   sessionId: string | null;
+  sessionLoading: boolean;
   startSession: () => Promise<void>;
   closeSession: () => Promise<void>;
   joinSession: (id: string) => Promise<void>;
@@ -29,8 +30,10 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionLoading, setSessionLoading] = useState<boolean>(false);
 
   const startSession = async () => {
+    setSessionLoading(true); 
     try {
       const response = await fetch(`${API_URL}/session/start`, {
         method: "POST",
@@ -39,6 +42,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       setSessionId(id);
     } catch (error) {
       console.error("Error starting session:", error);
+    } finally {
+      setSessionLoading(false);
     }
   };
 
@@ -56,6 +61,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const joinSession = async (id: string) => {
+    setSessionLoading(true); 
     try {
       const response = await fetch(`${API_URL}/session/${id}`);
       if (response.ok) {
@@ -65,6 +71,8 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     } catch (error) {
       console.error("Error joining session:", error);
+    } finally {
+      setSessionLoading(false);
     }
   };
 
@@ -82,6 +90,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     <SessionContext.Provider
       value={{
         sessionId,
+        sessionLoading,
         startSession,
         closeSession,
         joinSession,

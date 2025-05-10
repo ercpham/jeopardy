@@ -11,18 +11,12 @@
   min-height: 8rem; /* Set a minimum height */
 }
 
+.score-container.player {
+  height: 40vh;
+}
+
 .score-container::-webkit-scrollbar {
   display: none;
-}
-
-.score.buzz-lock-owned {
-  border: 2px solid blue;
-}
-
-.score {
-  display: flex;
-  flex-grow: 1;
-  flex-direction: column;
 }
 
 .wrapper {
