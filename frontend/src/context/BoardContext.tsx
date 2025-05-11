@@ -36,6 +36,7 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
    */
   const resetClickedCells = () => {
     setClickedCells(new Set());
+    setTargetScore(0);
   };
 
   return (
