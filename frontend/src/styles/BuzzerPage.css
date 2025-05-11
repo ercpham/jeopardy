@@ -4,7 +4,7 @@
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-  height: 80vh;
+  height: 70vh;
   width: 100vw;
   position: relative;
 }
@@ -22,16 +22,18 @@
 }
 
 .team-selector select {
-  padding: 5px;
+  padding: .5rem 1rem;
+  border: none;
+  box-shadow: rgba(0, 0, 0, .1) 2px 2px 2px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 .buzzer-button {
-  width: 20rem;
-  height: 20rem;
+  width: 18rem;
+  height: 18rem;
   border-radius: 50%;
   background-color: #ff4d4d;
-  color: white;
-  font-weight: bold;
   border: none;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);

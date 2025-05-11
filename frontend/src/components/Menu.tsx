@@ -28,6 +28,7 @@ const Menu: React.FC<MenuProps> = ({
   player,
 }) => {
   const [joinSessionId, setJoinSessionId] = useState("");
+  const [copyMessageVisible, setCopyMessageVisible] = useState(false);
   const { sessionLoading } = useSession();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +68,14 @@ const Menu: React.FC<MenuProps> = ({
     }
   };
 
+  const handleCopySessionId = () => {
+    if (sessionId) {
+      navigator.clipboard.writeText(sessionId);
+      setCopyMessageVisible(true);
+      setTimeout(() => setCopyMessageVisible(false), 1000);
+    }
+  };
+
   return (
     <div className={`menu ${menuOpen ? "open" : ""}`}>
       <ul>
@@ -82,7 +91,7 @@ const Menu: React.FC<MenuProps> = ({
             style={{ display: "none" }}
           />
         </li>
-        <li onClick={handleResetBoardState}>Reset Board State</li>
+        <li onClick={handleResetBoardState}>Reset Board</li>
         <li onClick={toggleScores}>Toggle Scores</li>
         <li
           onClick={() => {
@@ -101,27 +110,43 @@ const Menu: React.FC<MenuProps> = ({
               ? "Close Session"
               : "Start Session"}
         </li>
-        <li className="session-join-container">
-          {!sessionId && !sessionLoading && (
-            <div className="session-input-wrapper">
-              <input
-                type="text"
-                placeholder="Enter Session ID"
-                value={joinSessionId}
-                onChange={(e) => {
-                  const input = e.target.value.toUpperCase().replace(/[^A-Z]/g, ""); // Convert to uppercase and remove non-alphabetic characters
-                  setJoinSessionId(input);
-                }}
-              />
-              <button onClick={handleJoinSession}>Join Session</button>
-            </div>
+        <li className="session-join-wrapper">
+          {copyMessageVisible && (
+            <h5 className="copy-message">Copied to clipboard!</h5>
           )}
-          {!sessionId && sessionLoading && (
-            <div className="loading-spinner"></div>
-          )}
-          {sessionId && (
-            <div className="session-id">Session ID: {sessionId}</div>
-          )}
+          <div className="session-join-container">
+            {!sessionId && !sessionLoading && (
+              <div className="session-input-wrapper">
+                <input
+                  type="text"
+                  placeholder="Enter Session ID"
+                  value={joinSessionId}
+                  onChange={(e) => {
+                    const input = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z]/g, "");
+                    setJoinSessionId(input);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleJoinSession();
+                    }
+                  }}
+                />
+                <button onClick={handleJoinSession}>Join Session</button>
+              </div>
+            )}
+            {!sessionId && sessionLoading && (
+              <div className="loading-spinner"></div>
+            )}
+            {sessionId && (
+              <>
+                <div className="session-id" onClick={handleCopySessionId}>
+                  Session ID: {sessionId}
+                </div>
+              </>
+            )}
+          </div>
         </li>
       </ul>
     </div>

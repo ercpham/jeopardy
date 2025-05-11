@@ -11,8 +11,8 @@
   margin: 0;
   min-width: 0;
   box-shadow: rgba(0, 0, 0, .1) 2px 2px 2px;
-  margin-left: 1rem;
-  margin-right: 1rem;
+  margin-left: 1.2rem;
+  margin-right: 1.2rem;
 }
 
 .score-controls {
@@ -58,12 +58,13 @@
   /* padding-top: 1rem; */
   margin: 0rem;
   margin-top: 1rem;
+  cursor: pointer;
 }
 
 
 .scorecard button {
   border: none;
-  font-size: calc(0.5rem + 0.5vw);
+  font-size: calc(1rem + 0.5vw);
   height: 2rem;
   width: 4rem;
   cursor: pointer;

@@ -17,6 +17,7 @@ import "../styles/Board.css";
  * - Navigates to the question page when a button is clicked.
  * - Handles animations for button clicks.
  * - Highlights the most recently clicked button.
+ * - Allows editing of category headers above the board.
  */
 const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
   questions,
@@ -31,6 +32,10 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     setTargetScore,
   } = useBoard();
   const [animate, setAnimate] = useState(false);
+  const [categories, setCategories] = useState(
+    Array.from({ length: 5 }, (_, index) => `Category ${index + 1}`)
+  );
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (triggerAnimation) {
@@ -72,25 +77,60 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     }
   };
 
-  return (
-    <div className={`board`}>
-      {normalizedQuestions.map((question, index) => {
-        const pointValue = Math.floor(index / 5 + 1) * 100;
-        const isClicked = clickedCells.has(question.id);
-        const isRecentlyClicked = recentlyClickedIndex === index;
+  const handleCategoryChange = (index: number, newValue: string) => {
+    setCategories((prev) => {
+      const updated = [...prev];
+      updated[index] = newValue;
+      return updated;
+    });
+  };
 
-        return (
-          <button
-            key={question.id}
-            className={`board-button ${isClicked ? "clicked" : ""} ${animate ? "animate" : ""} ${isRecentlyClicked ? "recentlyClicked" : ""}`}
-            onClick={() => handleButtonClick(question.id, index)}
-            disabled={question.id.startsWith("blank")}
-            style={{ animationDelay: `${index * 0.02}s`, zIndex: 25 - index }} // Stagger animation
-          >
-            {question.id.startsWith("blank") ? "" : pointValue}
-          </button>
-        );
-      })}
+  const handleCategoryBlur = (index: number, value: string) => {
+    setEditingIndex(null);
+    handleCategoryChange(index, value);
+  };
+
+  return (
+    <div className={`board-container`}>
+      <div className={`board`}>
+        {categories.map((category, index) => (
+          <div key={index} className="category">
+            {editingIndex === index ? (
+              <input
+                type="text"
+                value={category}
+                onChange={(e) => handleCategoryChange(index, e.target.value)}
+                onBlur={(e) => handleCategoryBlur(index, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleCategoryBlur(index, e.currentTarget.value);
+                  }
+                }}
+                autoFocus
+              />
+            ) : (
+              <h4 onClick={() => setEditingIndex(index)}>{category}</h4>
+            )}
+          </div>
+        ))}
+        {normalizedQuestions.map((question, index) => {
+          const pointValue = Math.floor(index / 5 + 1) * 100;
+          const isClicked = clickedCells.has(question.id);
+          const isRecentlyClicked = recentlyClickedIndex === index;
+
+          return (
+            <button
+              key={question.id}
+              className={`board-button ${isClicked ? "clicked" : ""} ${animate ? "animate" : ""} ${isRecentlyClicked ? "recentlyClicked" : ""}`}
+              onClick={() => handleButtonClick(question.id, index)}
+              disabled={question.id.startsWith("blank")}
+              style={{ animationDelay: `${index * 0.02}s`, zIndex: 25 - index }} // Stagger animation
+            >
+              {question.id.startsWith("blank") ? "" : pointValue}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };

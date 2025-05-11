@@ -12,7 +12,7 @@
 }
 
 .score-container.player {
-  height: 40vh;
+  height: 30vh;
 }
 
 .score-container::-webkit-scrollbar {

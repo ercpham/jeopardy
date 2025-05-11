@@ -3,21 +3,24 @@ import questionsData from "../data/sample_questions.json";
 
 /**
  * QuestionsContext provides state management for questions in the application.
- * 
+ *
  * This context is used to manage the list of questions, reveal answers, and reset questions.
  */
 const QuestionsContext = createContext<QuestionsContextType | undefined>(
   undefined
 );
 
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
+// The following function is commented out as it is not used in the current implementation.
+/** 
+ * const shuffleArray = <T,>(array: T[]): T[] => {
+ *   const shuffled = [...array];
+ *   for (let i = shuffled.length - 1; i > 0; i--) {
+ *     const j = Math.floor(Math.random() * (i + 1));
+ *     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+ *   }
+ *   return shuffled;
+ * };
+ */
 
 export interface Question {
   id: string;
@@ -38,7 +41,7 @@ const defaultQuestions: Question[] = questionsData;
 
 /**
  * QuestionsProvider component wraps its children with the QuestionsContext.
- * 
+ *
  * Props:
  * - `children`: The child components that will have access to the QuestionsContext.
  */
@@ -52,18 +55,16 @@ export const QuestionsProvider: React.FC<{ children: ReactNode }> = ({
   ) => {
     if (typeof newQuestions === "function") {
       setQuestionsState((prevQuestions) =>
-        shuffleArray(
-          (newQuestions as (prev: Question[]) => Question[])(prevQuestions)
-        )
+        (newQuestions as (prev: Question[]) => Question[])(prevQuestions)
       );
     } else {
-      setQuestionsState(shuffleArray(newQuestions));
+      setQuestionsState(newQuestions);
     }
   };
 
   /**
    * Reveals the answer for a specific question by its ID.
-   * 
+   *
    * Parameters:
    * - `id`: The ID of the question to reveal.
    */
@@ -95,9 +96,9 @@ export const QuestionsProvider: React.FC<{ children: ReactNode }> = ({
 
 /**
  * useQuestions is a custom hook to access the QuestionsContext.
- * 
+ *
  * Throws an error if used outside of a QuestionsProvider.
- * 
+ *
  * Returns:
  * - `QuestionsContextType`: The context value containing questions, setQuestions, revealAnswer, and resetQuestions.
  */

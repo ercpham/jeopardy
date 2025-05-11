@@ -21,7 +21,6 @@ const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
   return (
     <div className="buzzer-page">
       <div className="team-selector">
-        <label htmlFor="team-select">Select Team: </label>
         <select
           id="team-select"
           value={selectedTeam}
