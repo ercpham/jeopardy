@@ -5,7 +5,7 @@
     "answerText": "Sheep Gate",
     "referenceText": "John 5:2",
     "revealed": false,
-    "category": "John's Gospel",
+    "category": "Category A",
     "pointValue": 100
   },
   {
@@ -14,8 +14,8 @@
     "answerText": "Sabbath",
     "referenceText": "John 5:16",
     "revealed": false,
-    "category": "John's Gospel",
-    "pointValue": 200
+    "category": "Category B",
+    "pointValue": 100
   },
   {
     "id": "3",
@@ -23,8 +23,8 @@
     "answerText": "They \"think that in them you have eternal life\"",
     "referenceText": "John 5:39",
     "revealed": false,
-    "category": "John's Gospel",
-    "pointValue": 300
+    "category": "Category C",
+    "pointValue": 100
   },
   {
     "id": "4",
@@ -32,8 +32,8 @@
     "answerText": "Thomas",
     "referenceText": "John 14:6",
     "revealed": false,
-    "category": "John's Gospel",
-    "pointValue": 400
+    "category": "Category D",
+    "pointValue": 100
   },
   {
     "id": "5",
@@ -41,8 +41,8 @@
     "answerText": "Turning water into wine",
     "referenceText": "John 2:1-11",
     "revealed": false,
-    "category": "John's Gospel",
-    "pointValue": 500
+    "category": "Category E",
+    "pointValue": 100
   },
   {
     "id": "6",
@@ -50,7 +50,7 @@
     "answerText": "Two times",
     "referenceText": "Matthew 9:13, 12:7",
     "revealed": false,
-    "category": "Matthew's Gospel",
+    "category": "Category F",
     "pointValue": 100
   },
   {
@@ -59,7 +59,7 @@
     "answerText": "Isaiah",
     "referenceText": "Matthew 12:20",
     "revealed": false,
-    "category": "Matthew's Gospel",
+    "category": "Category A",
     "pointValue": 200
   },
   {
@@ -68,8 +68,8 @@
     "answerText": "\"for either he will hate the one and love the other, or he will be devoted to the one and despise the other.\"",
     "referenceText": "Matthew 6:24",
     "revealed": false,
-    "category": "Matthew's Gospel",
-    "pointValue": 300
+    "category": "Category B",
+    "pointValue": 200
   },
   {
     "id": "9",
@@ -77,8 +77,8 @@
     "answerText": "\"You will recognize them by their fruits\"",
     "referenceText": "Matthew 7:16",
     "revealed": false,
-    "category": "Matthew's Gospel",
-    "pointValue": 400
+    "category": "Category C",
+    "pointValue": 200
   },
   {
     "id": "10",
@@ -86,8 +86,8 @@
     "answerText": "Korazin and Bethsaida",
     "referenceText": "Matthew 11:21",
     "revealed": false,
-    "category": "Matthew's Gospel",
-    "pointValue": 500
+    "category": "Category D",
+    "pointValue": 200
   },
   {
     "id": "11",
@@ -95,8 +95,8 @@
     "answerText": "Abiathar",
     "referenceText": "Mark 2:26",
     "revealed": false,
-    "category": "Mark's Gospel",
-    "pointValue": 100
+    "category": "Category E",
+    "pointValue": 200
   },
   {
     "id": "12",
@@ -104,7 +104,7 @@
     "answerText": "Mark",
     "referenceText": "Mark 3:5",
     "revealed": false,
-    "category": "Mark's Gospel",
+    "category": "Category F",
     "pointValue": 200
   },
   {
@@ -113,7 +113,7 @@
     "answerText": "The head of John the Baptist",
     "referenceText": "Mark 6:24-25",
     "revealed": false,
-    "category": "Mark's Gospel",
+    "category": "Category A",
     "pointValue": 300
   },
   {
@@ -122,8 +122,8 @@
     "answerText": "\"what must I do to inherit eternal life?\"",
     "referenceText": "Mark 10:17",
     "revealed": false,
-    "category": "Mark's Gospel",
-    "pointValue": 400
+    "category": "Category B",
+    "pointValue": 300
   },
   {
     "id": "15",
@@ -131,8 +131,8 @@
     "answerText": "Barabbas",
     "referenceText": "Mark 15:11",
     "revealed": false,
-    "category": "Mark's Gospel",
-    "pointValue": 500
+    "category": "Category C",
+    "pointValue": 300
   },
   {
     "id": "16",
@@ -140,8 +140,8 @@
     "answerText": "The poor",
     "referenceText": "Luke 6:20",
     "revealed": false,
-    "category": "Luke's Gospel",
-    "pointValue": 100
+    "category": "Category D",
+    "pointValue": 300
   },
   {
     "id": "17",
@@ -149,8 +149,8 @@
     "answerText": "Zechariah",
     "referenceText": "Luke 1:11-13",
     "revealed": false,
-    "category": "Luke's Gospel",
-    "pointValue": 200
+    "category": "Category E",
+    "pointValue": 300
   },
   {
     "id": "18",
@@ -158,7 +158,7 @@
     "answerText": "A priest",
     "referenceText": "Luke 10:31",
     "revealed": false,
-    "category": "Luke's Gospel",
+    "category": "Category F",
     "pointValue": 300
   },
   {
@@ -167,7 +167,7 @@
     "answerText": "Alabaster",
     "referenceText": "Luke 7:37",
     "revealed": false,
-    "category": "Luke's Gospel",
+    "category": "Category A",
     "pointValue": 400
   },
   {
@@ -176,8 +176,8 @@
     "answerText": "Three times",
     "referenceText": "Luke 5:20, 23, Luke 7:48",
     "revealed": false,
-    "category": "Luke's Gospel",
-    "pointValue": 500
+    "category": "Category B",
+    "pointValue": 400
   },
   {
     "id": "21",
@@ -185,8 +185,8 @@
     "answerText": "To be thrown out and trampled under people's feet",
     "referenceText": "Matthew 5:13",
     "revealed": false,
-    "category": "Parables & Teachings",
-    "pointValue": 100
+    "category": "Category C",
+    "pointValue": 400
   },
   {
     "id": "22",
@@ -194,8 +194,8 @@
     "answerText": "Least in the kingdom of heaven",
     "referenceText": "Matthew 5:19",
     "revealed": false,
-    "category": "Parables & Teachings",
-    "pointValue": 200
+    "category": "Category D",
+    "pointValue": 400
   },
   {
     "id": "23",
@@ -203,8 +203,8 @@
     "answerText": "Whoever insults his brother",
     "referenceText": "Matthew 5:22",
     "revealed": false,
-    "category": "Parables & Teachings",
-    "pointValue": 300
+    "category": "Category E",
+    "pointValue": 400
   },
   {
     "id": "24",
@@ -212,7 +212,7 @@
     "answerText": "No",
     "referenceText": "Matthew 5:36",
     "revealed": false,
-    "category": "Parables & Teachings",
+    "category": "Category F",
     "pointValue": 400
   },
   {
@@ -221,7 +221,7 @@
     "answerText": "\"they love to stand and pray in the synagogues and at the street corners, that they may be seen by others\"",
     "referenceText": "Matthew 6:5",
     "revealed": false,
-    "category": "Parables & Teachings",
+    "category": "Category A",
     "pointValue": 500
   },
   {
@@ -230,8 +230,8 @@
     "answerText": "Judas, the son of James",
     "referenceText": "Mark 3:18, Luke 6:16",
     "revealed": false,
-    "category": "People & Places",
-    "pointValue": 100
+    "category": "Category B",
+    "pointValue": 500
   },
   {
     "id": "27",
@@ -239,8 +239,8 @@
     "answerText": "The elders of the Jews and his friends",
     "referenceText": "Luke 7:3, 6",
     "revealed": false,
-    "category": "People & Places",
-    "pointValue": 200
+    "category": "Category C",
+    "pointValue": 500
   },
   {
     "id": "28",
@@ -248,8 +248,8 @@
     "answerText": "Nain",
     "referenceText": "Luke 7:11",
     "revealed": false,
-    "category": "People & Places",
-    "pointValue": 300
+    "category": "Category D",
+    "pointValue": 500
   },
   {
     "id": "29",
@@ -257,8 +257,8 @@
     "answerText": "The one who is least in the kingdom of heaven / God",
     "referenceText": "Mathew 11:11, Luke 7:28",
     "revealed": false,
-    "category": "People & Places",
-    "pointValue": 400
+    "category": "Category E",
+    "pointValue": 500
   },
   {
     "id": "30",
@@ -266,7 +266,7 @@
     "answerText": "Chuza",
     "referenceText": "Luke 8:2",
     "revealed": false,
-    "category": "People & Places",
+    "category": "Category F",
     "pointValue": 500
   }
 ]
