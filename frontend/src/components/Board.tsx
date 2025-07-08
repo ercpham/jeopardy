@@ -33,7 +33,7 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
   } = useBoard();
   const [animate, setAnimate] = useState(false);
   const [categories, setCategories] = useState(
-    Array.from({ length: 5 }, (_, index) => `Category ${index + 1}`)
+    Array.from({ length: 6 }, (_, index) => `Category ${index + 1}`)
   );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -45,13 +45,25 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     }
   }, [triggerAnimation]);
 
-  const normalizedQuestions = Array.from({ length: 25 }, (_, index) => {
+  useEffect(() => {
+    if (questions.length > 0 && questions.every((q) => q.category)) {
+      const newCategories = Array.from(
+        new Set(questions.map((q) => q.category).filter((c): c is string => !!c))
+      );
+      if (newCategories.length === 6) {
+        setCategories(newCategories);
+      }
+    }
+  }, [questions]);
+
+  const normalizedQuestions = Array.from({ length: 30 }, (_, index) => {
     return (
       questions[index] || {
         id: `blank-${index}`,
         questionText: "",
         answerText: "",
         referenceText: "",
+        revealed: false,
       }
     );
   });
@@ -71,7 +83,9 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
         return newSet;
       });
       setRecentlyClickedIndex(index); // Update the recently clicked index
-      const pointValue = Math.floor(index / 5 + 1) * 100;
+      const pointValue =
+        normalizedQuestions[index]?.pointValue ||
+        Math.floor(index / 6 + 1) * 100;
       setTargetScore(pointValue); // Set the target score in context
       navigate(`/question/${id}`);
     }
@@ -114,17 +128,23 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
           </div>
         ))}
         {normalizedQuestions.map((question, index) => {
-          const pointValue = Math.floor(index / 5 + 1) * 100;
+          const pointValue =
+            question.pointValue || Math.floor(index / 6 + 1) * 100;
           const isClicked = clickedCells.has(question.id);
           const isRecentlyClicked = recentlyClickedIndex === index;
 
           return (
             <button
               key={question.id}
-              className={`board-button ${isClicked ? "clicked" : ""} ${animate ? "animate" : ""} ${isRecentlyClicked ? "recentlyClicked" : ""}`}
+              className={`board-button ${isClicked ? "clicked" : ""} ${
+                animate ? "animate" : ""
+              } ${isRecentlyClicked ? "recentlyClicked" : ""}`}
               onClick={() => handleButtonClick(question.id, index)}
               disabled={question.id.startsWith("blank")}
-              style={{ animationDelay: `${index * 0.02}s`, zIndex: 25 - index }} // Stagger animation
+              style={{
+                animationDelay: `${index * 0.02}s`,
+                zIndex: 30 - index,
+              }} // Stagger animation
             >
               {question.id.startsWith("blank") ? "" : pointValue}
             </button>

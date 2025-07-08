@@ -4,174 +4,269 @@
     "questionText": "By which gate in Jerusalem is Bethesda?",
     "answerText": "Sheep Gate",
     "referenceText": "John 5:2",
-    "revealed": false
+    "revealed": false,
+    "category": "John's Gospel",
+    "pointValue": 100
   },
   {
     "id": "2",
     "questionText": "On what day did Jesus heal the invalid by Bethesda?",
     "answerText": "Sabbath",
     "referenceText": "John 5:16",
-    "revealed": false
+    "revealed": false,
+    "category": "John's Gospel",
+    "pointValue": 200
   },
   {
     "id": "3",
     "questionText": "What reason does Jesus give for why the Jews \"search the Scriptures\"?",
     "answerText": "They \"think that in them you have eternal life\"",
     "referenceText": "John 5:39",
-    "revealed": false
+    "revealed": false,
+    "category": "John's Gospel",
+    "pointValue": 300
   },
   {
     "id": "4",
-    "questionText": "How many times does Matthew's gospel quote \"I desire mercy, and not sacrifice\"?",
-    "answerText": "Two times",
-    "referenceText": "Matthew 9:13, 12:7",
-    "revealed": false
+    "questionText": "To whom did Jesus say, 'I am the way, and the truth, and the life'?",
+    "answerText": "Thomas",
+    "referenceText": "John 14:6",
+    "revealed": false,
+    "category": "John's Gospel",
+    "pointValue": 400
   },
   {
     "id": "5",
-    "questionText": "During the time of which high priest did David eat the bread of the Presence?",
-    "answerText": "Abiathar",
-    "referenceText": "Mark 2:26",
-    "revealed": false
+    "questionText": "What was the first miracle Jesus performed, as recorded in John's Gospel?",
+    "answerText": "Turning water into wine",
+    "referenceText": "John 2:1-11",
+    "revealed": false,
+    "category": "John's Gospel",
+    "pointValue": 500
   },
   {
     "id": "6",
-    "questionText": "When Jesus heals the man with the shriveled hand, whose gospel records that Jesus experienced anger and grief?",
-    "answerText": "Mark",
-    "referenceText": "Mark 3:5",
-    "revealed": false
+    "questionText": "How many times does Matthew's gospel quote \"I desire mercy, and not sacrifice\"?",
+    "answerText": "Two times",
+    "referenceText": "Matthew 9:13, 12:7",
+    "revealed": false,
+    "category": "Matthew's Gospel",
+    "pointValue": 100
   },
   {
     "id": "7",
     "questionText": "Which prophet spoke: \"A bruised reed he will not break, and a smoldering wick he will not quench?\"",
     "answerText": "Isaiah",
     "referenceText": "Matthew 12:20",
-    "revealed": false
+    "revealed": false,
+    "category": "Matthew's Gospel",
+    "pointValue": 200
   },
   {
     "id": "8",
-    "questionText": "What is another name for Thaddaeus, one of the twelve apostles?",
-    "answerText": "Judas, the son of James",
-    "referenceText": "Mark 3:18, Luke 6:16",
-    "revealed": false
-  },
-  {
-    "id": "9",
-    "questionText": "Who is blessed, \"for theirs is the kingdom of God?\"",
-    "answerText": "The poor",
-    "referenceText": "Luke 6:20",
-    "revealed": false
-  },
-  {
-    "id": "10",
-    "questionText": "When salt has lost its taste, what is it good for?",
-    "answerText": "To be thrown out and trampled under people's feet",
-    "referenceText": "Matthew 5:13",
-    "revealed": false
-  },
-  {
-    "id": "11",
-    "questionText": "For those who relax the least of the commandments of the Law, what will they be called?",
-    "answerText": "Least in the kingdom of heaven",
-    "referenceText": "Matthew 5:19",
-    "revealed": false
-  },
-  {
-    "id": "12",
-    "questionText": "Performing what action will make you \"liable to the council?\"",
-    "answerText": "Whoever insults his brother",
-    "referenceText": "Matthew 5:22",
-    "revealed": false
-  },
-  {
-    "id": "13",
-    "questionText": "Can you make one hair white or black?",
-    "answerText": "No",
-    "referenceText": "Matthew 5:36",
-    "revealed": false
-  },
-  {
-    "id": "14",
-    "questionText": "What does Jesus say the hypocrites do when they pray?",
-    "answerText": "\"they love to stand and pray in the synagogues and at the street corners, that they may be seen by others\"",
-    "referenceText": "Matthew 6:5",
-    "revealed": false
-  },
-  {
-    "id": "15",
     "questionText": "What reason does Jesus give for saying \"No one can serve two masters?\"",
     "answerText": "\"for either he will hate the one and love the other, or he will be devoted to the one and despise the other.\"",
     "referenceText": "Matthew 6:24",
-    "revealed": false
+    "revealed": false,
+    "category": "Matthew's Gospel",
+    "pointValue": 300
   },
   {
-    "id": "16",
-    "questionText": "What must be done before taking the speck out of your brother's eye?",
-    "answerText": "\"first take the log out of your own eye\"",
-    "referenceText": "Matthew 7:5, Luke 6:42",
-    "revealed": false
-  },
-  {
-    "id": "17",
+    "id": "9",
     "questionText": "How does Jesus say false prophets are recognized?",
     "answerText": "\"You will recognize them by their fruits\"",
     "referenceText": "Matthew 7:16",
-    "revealed": false
+    "revealed": false,
+    "category": "Matthew's Gospel",
+    "pointValue": 400
   },
   {
-    "id": "18",
-    "questionText": "Through which groups of people did the centurion speak to Jesus?",
-    "answerText": "The elders of the Jews and his friends",
-    "referenceText": "Luke 7:3, 6",
-    "revealed": false
-  },
-  {
-    "id": "19",
-    "questionText": "Near the gate of which town did Jesus raise a widow's son from the dead?",
-    "answerText": "Nain",
-    "referenceText": "Luke 7:11",
-    "revealed": false
-  },
-  {
-    "id": "20",
-    "questionText": "Who is greater than John the Baptist?",
-    "answerText": "The one who is least in the kingdom of heaven / God",
-    "referenceText": "Mathew 11:11, Luke 7:28",
-    "revealed": false
-  },
-  {
-    "id": "21",
+    "id": "10",
     "questionText": "Which cities does Jesus contrast with Tyre and Sidon?",
     "answerText": "Korazin and Bethsaida",
     "referenceText": "Matthew 11:21",
-    "revealed": false
+    "revealed": false,
+    "category": "Matthew's Gospel",
+    "pointValue": 500
   },
   {
-    "id": "22",
-    "questionText": "What city does Jesus contrast with Sodom?",
-    "answerText": "Capernaum",
-    "referenceText": "Matthew 11:23",
-    "revealed": false
+    "id": "11",
+    "questionText": "During the time of which high priest did David eat the bread of the Presence?",
+    "answerText": "Abiathar",
+    "referenceText": "Mark 2:26",
+    "revealed": false,
+    "category": "Mark's Gospel",
+    "pointValue": 100
   },
   {
-    "id": "23",
+    "id": "12",
+    "questionText": "When Jesus heals the man with the shriveled hand, whose gospel records that Jesus experienced anger and grief?",
+    "answerText": "Mark",
+    "referenceText": "Mark 3:5",
+    "revealed": false,
+    "category": "Mark's Gospel",
+    "pointValue": 200
+  },
+  {
+    "id": "13",
+    "questionText": "Who did Herodias's daughter ask for as a reward for her dancing?",
+    "answerText": "The head of John the Baptist",
+    "referenceText": "Mark 6:24-25",
+    "revealed": false,
+    "category": "Mark's Gospel",
+    "pointValue": 300
+  },
+  {
+    "id": "14",
+    "questionText": "What did the rich young ruler ask Jesus?",
+    "answerText": "\"what must I do to inherit eternal life?\"",
+    "referenceText": "Mark 10:17",
+    "revealed": false,
+    "category": "Mark's Gospel",
+    "pointValue": 400
+  },
+  {
+    "id": "15",
+    "questionText": "Who did the crowd ask Pilate to release instead of Jesus?",
+    "answerText": "Barabbas",
+    "referenceText": "Mark 15:11",
+    "revealed": false,
+    "category": "Mark's Gospel",
+    "pointValue": 500
+  },
+  {
+    "id": "16",
+    "questionText": "Who is blessed, \"for theirs is the kingdom of God?\"",
+    "answerText": "The poor",
+    "referenceText": "Luke 6:20",
+    "revealed": false,
+    "category": "Luke's Gospel",
+    "pointValue": 100
+  },
+  {
+    "id": "17",
+    "questionText": "To whom did the angel Gabriel appear to announce the birth of John the Baptist?",
+    "answerText": "Zechariah",
+    "referenceText": "Luke 1:11-13",
+    "revealed": false,
+    "category": "Luke's Gospel",
+    "pointValue": 200
+  },
+  {
+    "id": "18",
+    "questionText": "In the parable of the Good Samaritan, who was the first person to pass by the injured man?",
+    "answerText": "A priest",
+    "referenceText": "Luke 10:31",
+    "revealed": false,
+    "category": "Luke's Gospel",
+    "pointValue": 300
+  },
+  {
+    "id": "19",
     "questionText": "Jesus's feet were anointed with ointment contained in what kind of flask?",
     "answerText": "Alabaster",
     "referenceText": "Luke 7:37",
-    "revealed": false
+    "revealed": false,
+    "category": "Luke's Gospel",
+    "pointValue": 400
   },
   {
-    "id": "24",
+    "id": "20",
     "questionText": "Luke records Jesus saying \"Your sins are forgiven\" how many times?",
     "answerText": "Three times",
     "referenceText": "Luke 5:20, 23, Luke 7:48",
-    "revealed": false
+    "revealed": false,
+    "category": "Luke's Gospel",
+    "pointValue": 500
+  },
+  {
+    "id": "21",
+    "questionText": "When salt has lost its taste, what is it good for?",
+    "answerText": "To be thrown out and trampled under people's feet",
+    "referenceText": "Matthew 5:13",
+    "revealed": false,
+    "category": "Parables & Teachings",
+    "pointValue": 100
+  },
+  {
+    "id": "22",
+    "questionText": "For those who relax the least of the commandments of the Law, what will they be called?",
+    "answerText": "Least in the kingdom of heaven",
+    "referenceText": "Matthew 5:19",
+    "revealed": false,
+    "category": "Parables & Teachings",
+    "pointValue": 200
+  },
+  {
+    "id": "23",
+    "questionText": "Performing what action will make you \"liable to the council?\"",
+    "answerText": "Whoever insults his brother",
+    "referenceText": "Matthew 5:22",
+    "revealed": false,
+    "category": "Parables & Teachings",
+    "pointValue": 300
+  },
+  {
+    "id": "24",
+    "questionText": "Can you make one hair white or black?",
+    "answerText": "No",
+    "referenceText": "Matthew 5:36",
+    "revealed": false,
+    "category": "Parables & Teachings",
+    "pointValue": 400
   },
   {
     "id": "25",
+    "questionText": "What does Jesus say the hypocrites do when they pray?",
+    "answerText": "\"they love to stand and pray in the synagogues and at the street corners, that they may be seen by others\"",
+    "referenceText": "Matthew 6:5",
+    "revealed": false,
+    "category": "Parables & Teachings",
+    "pointValue": 500
+  },
+  {
+    "id": "26",
+    "questionText": "What is another name for Thaddaeus, one of the twelve apostles?",
+    "answerText": "Judas, the son of James",
+    "referenceText": "Mark 3:18, Luke 6:16",
+    "revealed": false,
+    "category": "People & Places",
+    "pointValue": 100
+  },
+  {
+    "id": "27",
+    "questionText": "Through which groups of people did the centurion speak to Jesus?",
+    "answerText": "The elders of the Jews and his friends",
+    "referenceText": "Luke 7:3, 6",
+    "revealed": false,
+    "category": "People & Places",
+    "pointValue": 200
+  },
+  {
+    "id": "28",
+    "questionText": "Near the gate of which town did Jesus raise a widow's son from the dead?",
+    "answerText": "Nain",
+    "referenceText": "Luke 7:11",
+    "revealed": false,
+    "category": "People & Places",
+    "pointValue": 300
+  },
+  {
+    "id": "29",
+    "questionText": "Who is greater than John the Baptist?",
+    "answerText": "The one who is least in the kingdom of heaven / God",
+    "referenceText": "Mathew 11:11, Luke 7:28",
+    "revealed": false,
+    "category": "People & Places",
+    "pointValue": 400
+  },
+  {
+    "id": "30",
     "questionText": "Who is Herod's household manager?",
     "answerText": "Chuza",
     "referenceText": "Luke 8:2",
-    "revealed": false
+    "revealed": false,
+    "category": "People & Places",
+    "pointValue": 500
   }
 ]

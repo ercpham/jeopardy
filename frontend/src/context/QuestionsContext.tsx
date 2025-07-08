@@ -28,6 +28,8 @@ export interface Question {
   answerText: string;
   referenceText: string;
   revealed: boolean;
+  category?: string;
+  pointValue?: number;
 }
 
 interface QuestionsContextType {

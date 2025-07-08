@@ -39,20 +39,52 @@ const Menu: React.FC<MenuProps> = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const parsedQuestions = text
-        .split("\n")
-        .slice(1)
-        .filter((line) => line.trim() !== "")
-        .map((line, index) => {
-          const [questionText, answerText, referenceText] = line.split("\t");
-          return {
-            id: `${index + 1}`,
-            questionText: questionText || "",
-            answerText: answerText || "",
-            referenceText: referenceText || "",
-            revealed: false,
-          };
+      const lines = text.split("\n").filter((line) => line.trim() !== "");
+      const headers = lines[0].split("\t").map((h) => h.trim());
+      const questionLines = lines.slice(1);
+
+      const hasCategory = headers.includes("Category");
+      const hasPointValue = headers.includes("Point Value");
+
+      let parsedQuestions = questionLines.map((line, index) => {
+        const values = line.split("\t");
+        const question: any = {
+          id: `${index + 1}`,
+          revealed: false,
+        };
+
+        headers.forEach((header, i) => {
+          switch (header) {
+            case "Question":
+              question.questionText = values[i] || "";
+              break;
+            case "Answer":
+              question.answerText = values[i] || "";
+              break;
+            case "Reference":
+              question.referenceText = values[i] || "";
+              break;
+            case "Category":
+              question.category = values[i] || "";
+              break;
+            case "Point Value":
+              question.pointValue = parseInt(values[i], 10) || 0;
+              break;
+          }
         });
+
+        return question;
+      });
+
+      if (hasCategory && hasPointValue) {
+        parsedQuestions.sort((a, b) => {
+          if (a.pointValue !== b.pointValue) {
+            return a.pointValue - b.pointValue;
+          }
+          return a.category.localeCompare(b.category);
+        });
+      }
+
       setQuestions(parsedQuestions);
       handleResetBoardState();
     };
