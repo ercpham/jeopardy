@@ -83,6 +83,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         } else {
           setBuzzLock(false);
+          hasPlayedBuzzerRef.current = false;
         }
       });
   };
@@ -159,10 +160,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     fetch(`${API_URL}/session/${sessionId}/buzz/release`, {
       method: "POST",
     })
-      .then(() => {
-        setBuzzLock(false);
-        hasPlayedBuzzerRef.current = false;
-      })
       .catch(() => {});
 
     fetchTeams();
