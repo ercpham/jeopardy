@@ -25,8 +25,10 @@ pub async fn start_session() -> Json<String> {
         .collect();
     let mut session_id = session_id.to_uppercase();
 
+    let now = Utc::now();
     let session = Session {
-        created_at: Utc::now(),
+        created_at: now,
+        last_modified: now,
         buzz_lock: false,
         teams: vec![
             Team {
@@ -122,8 +124,11 @@ pub async fn modify_session_team_info(
     if let Some(session_mutex) = sessions.get(&session_id) {
         let mut session = session_mutex.lock().await;
         if let Some(team) = session.teams.get_mut(team_index) {
+            // Clone the updated team for the response before dropping the borrow
+            let response_team = updated_team.clone();
             *team = updated_team;
-            (StatusCode::OK, Json(Some(team.clone())))
+            session.last_modified = Utc::now();
+            (StatusCode::OK, Json(Some(response_team)))
         } else {
             (StatusCode::NOT_FOUND, Json(None))
         }
@@ -200,6 +205,7 @@ pub async fn set_buzz_lock_owned(
         if let Some(team) = session.teams.get_mut(team_index) {
             team.buzz_lock_owned = true;
             session.buzz_lock = true;
+            session.last_modified = Utc::now();
             (StatusCode::OK, Json("Success"))
         } else {
             (StatusCode::NOT_FOUND, Json("Team not found"))

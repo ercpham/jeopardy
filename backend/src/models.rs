@@ -40,9 +40,11 @@ pub struct Team {
 /// - `teams`: The list of teams participating in the session.
 /// - `buzz_lock`: Whether the buzz lock is currently active.
 /// - `created_at`: The timestamp when the session was created.
+/// - `last_modified`: The timestamp when the session was last modified.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Session {
     pub teams: Vec<Team>,
     pub buzz_lock: bool,
     pub created_at: DateTime<Utc>,
+    pub last_modified: DateTime<Utc>,
 }
