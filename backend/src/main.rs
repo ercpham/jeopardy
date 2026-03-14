@@ -1,75 +1,59 @@
 //! Main entry point for the Bible Challenge backend server.
-//! This module initializes the server, sets up routes, and starts the Axum application.
+//! Initializes the Axum application with HTTP routes, WebSocket support,
+//! shared state, CORS, and a background session cleanup task.
 
 mod models;
 mod routes;
 mod utils;
 
 use axum::Router;
-use once_cell::sync::Lazy;
-use std::collections::HashMap;
 use std::env;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use std::time::Duration;
-use tokio::sync::{Mutex as AsyncMutex, RwLock};
 use tower_http::cors::{Any, CorsLayer};
 
-use crate::models::Session;
+use crate::models::AppState;
 use crate::routes::{
     close_session, get_session_id, get_session_team_info, modify_session_team_info,
-    release_buzz_lock, set_buzz_lock_owned, start_session,
+    release_buzz_lock, set_buzz_lock_owned, start_session, ws_handler,
 };
 use crate::utils::cleanup_sessions;
 
-static SESSIONS: Lazy<RwLock<HashMap<String, AsyncMutex<Session>>>> =
-    Lazy::new(|| RwLock::new(HashMap::new()));
-
-/// Main function to start the server.
-///
-/// - Initializes the tracing subscriber for logging.
-/// - Configures CORS settings.
-/// - Sets up the Axum router with defined routes.
-/// - Spawns a background task to clean up expired sessions.
-/// - Binds the server to the specified port and starts serving requests.
 #[tokio::main]
 async fn main() {
+    let state: Arc<AppState> = AppState::new();
+
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let routes = vec![
-        ("/session/start", axum::routing::post(start_session)),
-        ("/session/:id", axum::routing::get(get_session_id)),
-        (
-            "/session/:id/teams",
-            axum::routing::get(get_session_team_info),
-        ),
-        (
+    let app = Router::new()
+        .route("/session/start", axum::routing::post(start_session))
+        .route("/session/:id", axum::routing::get(get_session_id))
+        .route("/session/:id/teams", axum::routing::get(get_session_team_info))
+        .route(
             "/session/:id/teams/:index",
             axum::routing::put(modify_session_team_info),
-        ),
-        ("/session/:id/close", axum::routing::post(close_session)),
-        (
+        )
+        .route("/session/:id/close", axum::routing::post(close_session))
+        .route(
             "/session/:id/buzz/release",
             axum::routing::post(release_buzz_lock),
-        ),
-        (
+        )
+        .route(
             "/session/:id/buzz/:index",
             axum::routing::post(set_buzz_lock_owned),
-        ),
-    ];
+        )
+        .route("/session/:id/ws", axum::routing::get(ws_handler))
+        .layer(cors)
+        .with_state(state.clone());
 
-    let app = routes
-        .into_iter()
-        .fold(Router::new(), |router, (path, method)| {
-            router.route(path, method)
-        })
-        .layer(cors);
-
-    tokio::spawn(async {
+    let cleanup_state = state.clone();
+    tokio::spawn(async move {
         loop {
-            cleanup_sessions().await;
+            cleanup_sessions(&cleanup_state).await;
             tokio::time::sleep(Duration::from_secs(600)).await;
         }
     });
