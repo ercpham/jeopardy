@@ -17,6 +17,7 @@ import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
 import { useSession } from "./context/SessionContext";
 import Menu from "./components/Menu";
+import Settings from "./components/Settings";
 
 const App: React.FC = () => {
   const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, hasPlayedBuzzerRef, loading } =
@@ -100,15 +101,16 @@ const App: React.FC = () => {
         handleResetBoardState={handleResetBoardState}
         player={player}
       />
-      <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
-        <button
-          className="hamburger-button"
-          onClick={toggleMenu}
-          aria-label="Open Menu"
-        >
-          ☰
-        </button>
-        {buzzLock && !player && (
+       <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
+         <button
+           className="hamburger-button"
+           onClick={toggleMenu}
+           aria-label="Open Menu"
+         >
+           ☰
+         </button>
+         {!player && <Settings />}
+         {buzzLock && !player && (
           <button
             onClick={releaseBuzzLock}
             className={"lock-button"}

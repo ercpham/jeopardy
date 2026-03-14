@@ -15,18 +15,20 @@
   justify-content: center;
   align-items: center;
   top: 1rem;
-  right: 1rem;
-  display: flex;
-  align-items: center;
+  left: 50%;
+  transform: translateX(-50%);
   gap: 10px;
 }
 
 .team-selector select {
   padding: .5rem 1rem;
   border: none;
-  box-shadow: rgba(0, 0, 0, .1) 2px 2px 2px;
+  box-shadow: var(--shadow-color) 2px 2px 2px;
   border-radius: 5px;
   cursor: pointer;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  font-size: calc(1.50rem + 0.1vw);
 }
 
 .buzzer-button {

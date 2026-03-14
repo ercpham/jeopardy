@@ -24,9 +24,12 @@ interface SessionContextProps {
   joinSession: (id: string) => Promise<void>;
   setSessionId: (id: string | null) => void;
   wsRef: React.MutableRefObject<WebSocket | null>;
+  /** @deprecated use addWsListener / removeWsListener instead */
   setOnWsMessage: (
     handler: ((event: MessageEvent) => void) | null
   ) => void;
+  addWsListener: (handler: (event: MessageEvent) => void) => void;
+  removeWsListener: (handler: (event: MessageEvent) => void) => void;
 }
 
 const SessionContext = createContext<SessionContextProps | undefined>(undefined);
@@ -51,6 +54,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [sessionState, setSessionState] = useState<any | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const onWsMessageRef = useRef<((event: MessageEvent) => void) | null>(null);
+  const wsListenersRef = useRef<Set<(event: MessageEvent) => void>>(new Set());
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const intentionalCloseRef = useRef(false);
@@ -60,7 +64,15 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       onWsMessageRef.current = handler;
     },
     []
-  );
+   );
+
+  const addWsListener = useCallback((handler: (event: MessageEvent) => void) => {
+    wsListenersRef.current.add(handler);
+  }, []);
+
+  const removeWsListener = useCallback((handler: (event: MessageEvent) => void) => {
+    wsListenersRef.current.delete(handler);
+  }, []);
 
   const connectWs = useCallback(
     (id: string) => {
@@ -94,10 +106,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         } catch {
           // Ignore unparseable messages
         }
-        if (onWsMessageRef.current) {
-          onWsMessageRef.current(event);
-        }
-      };
+         if (onWsMessageRef.current) {
+           onWsMessageRef.current(event);
+         }
+         wsListenersRef.current.forEach((listener) => listener(event));
+       };
 
       ws.onclose = () => {
         setWsConnected(false);
@@ -214,9 +227,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         closeSession,
         joinSession,
         setSessionId: setSessionIdExternally,
-        wsRef,
-        setOnWsMessage,
-      }}
+         wsRef,
+         setOnWsMessage,
+         addWsListener,
+         removeWsListener,
+       }}
     >
       {children}
     </SessionContext.Provider>

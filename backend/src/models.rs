@@ -31,6 +31,8 @@ pub struct Team {
 pub struct Session {
     pub teams: Vec<Team>,
     pub buzz_lock: bool,
+    pub dark_mode: bool,
+    pub timer_enabled: bool,
     pub created_at: DateTime<Utc>,
     pub last_modified: DateTime<Utc>,
 }
@@ -41,8 +43,11 @@ pub struct Session {
 pub enum WsClientMsg {
     BuzzIn { team_index: usize },
     ReleaseBuzz,
+    LockBuzzers,
     UpdateScore { team_index: usize, score: i32 },
     UpdateTeamName { team_index: usize, name: String },
+    UpdateDarkMode { enabled: bool },
+    UpdateTimerEnabled { enabled: bool },
 }
 
 /// Messages sent from server to client over WebSocket.
@@ -51,9 +56,12 @@ pub enum WsClientMsg {
 pub enum WsServerMsg {
     FullState { session: Session },
     BuzzLocked { team_index: usize },
+    BuzzersLocked,
     BuzzReleased,
     ScoreUpdate { team_index: usize, score: i32 },
     TeamNameUpdate { team_index: usize, name: String },
+    DarkModeUpdate { enabled: bool },
+    TimerEnabledUpdate { enabled: bool },
     SessionClosed,
 }
 

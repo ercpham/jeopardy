@@ -26,6 +26,7 @@ interface TeamContextProps {
   buzzLock: boolean;
   modifyTeam: (team: Team, index: number) => void;
   releaseBuzzLock: () => void;
+  lockBuzzers: () => void;
   buzzIn: (index: number) => void;
   hasPlayedBuzzerRef: React.RefObject<boolean>;
   selectedTeam: number;
@@ -134,10 +135,16 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
                   ? { ...team, team_name: msg.name }
                   : team
               )
-            );
-            break;
+             );
+             break;
 
-          case "SessionClosed":
+           case "BuzzersLocked":
+             setBuzzLock(true);
+             // No team owns the lock — timer expiry
+             setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false })));
+             break;
+
+           case "SessionClosed":
             setSessionId(null);
             setTeams(defaultTeams);
             setBuzzLock(false);
@@ -248,10 +255,25 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  /**
-   * Modify a team's full info. Uses HTTP PUT (preserves existing behavior).
-   * Server broadcasts the update to WebSocket clients.
-   */
+   /**
+    * Lock buzzers without crediting any team (used when timer expires).
+    * Sends LockBuzzers over WebSocket so all clients lock in sync.
+    */
+   const lockBuzzers = () => {
+     if (sessionId) {
+       sendWsMessage({ type: "LockBuzzers" });
+       // Server will broadcast BuzzersLocked back to all clients including us
+       return;
+     }
+     // Solo mode: update local state directly
+     setBuzzLock(true);
+     setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false })));
+   };
+
+   /**
+    * Modify a team's full info. Uses HTTP PUT (preserves existing behavior).
+    * Server broadcasts the update to WebSocket clients.
+    */
   const modifyTeam = (team: Team, index: number) => {
     if (!sessionId) {
       setTeams((prev) =>
@@ -284,6 +306,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
         buzzLock,
         modifyTeam,
         releaseBuzzLock,
+        lockBuzzers,
         buzzIn,
         hasPlayedBuzzerRef,
         loading,

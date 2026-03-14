@@ -190,9 +190,32 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
                     },
                 )
                 .await;
-            }
-        }
-    }
+             }
+         }
+         WsClientMsg::LockBuzzers => {
+             if !session.buzz_lock {
+                 session.buzz_lock = true;
+                 session.last_modified = Utc::now();
+                 drop(session);
+                 drop(sessions);
+                 broadcast(state, session_id, &WsServerMsg::BuzzersLocked).await;
+             }
+         }
+         WsClientMsg::UpdateDarkMode { enabled } => {
+             session.dark_mode = enabled;
+             session.last_modified = Utc::now();
+             drop(session);
+             drop(sessions);
+             broadcast(state, session_id, &WsServerMsg::DarkModeUpdate { enabled }).await;
+         }
+         WsClientMsg::UpdateTimerEnabled { enabled } => {
+             session.timer_enabled = enabled;
+             session.last_modified = Utc::now();
+             drop(session);
+             drop(sessions);
+             broadcast(state, session_id, &WsServerMsg::TimerEnabledUpdate { enabled }).await;
+         }
+     }
 }
 
 // ──────────────────────────────────────────────
@@ -257,6 +280,8 @@ pub async fn start_session(State(state): State<Arc<AppState>>) -> Json<String> {
         created_at: now,
         last_modified: now,
         buzz_lock: false,
+        dark_mode: false,
+        timer_enabled: false,
         teams: vec![
             Team {
                 team_name: "Team 1".to_string(),
