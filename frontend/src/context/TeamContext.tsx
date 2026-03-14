@@ -4,13 +4,16 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
 } from "react";
 import { useSession } from "./SessionContext";
 
 /**
- * TeamContext provides state management for team information in the application.
+ * TeamContext provides state management for team information.
  *
- * This context is used to manage the scores and names of teams, modify scores, and handle loading states.
+ * Replaces HTTP polling with WebSocket push updates.
+ * Sends actions (buzz, release, score, name) via WebSocket and
+ * listens for server broadcasts to update React state.
  */
 export interface Team {
   team_name: String;
@@ -40,69 +43,151 @@ const TeamContext = createContext<TeamContextProps | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:3000";
 
-/**
- * TeamProvider component wraps its children with the TeamContext.
- *
- * Props:
- * - `children`: The child components that will have access to the TeamContext.
- */
 export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [teams, setTeams] = useState<Team[]>(defaultTeams);
   const [buzzLock, setBuzzLock] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState<number>(0);
   const hasPlayedBuzzerRef = useRef(false);
 
-  const { sessionId, setSessionId } = useSession();
+  const { sessionId, setSessionId, wsRef, setOnWsMessage, sessionState } =
+    useSession();
+
+  // Derive loading: true while waiting for initial session state from WS
+  const loading = !!(sessionId && !sessionState);
 
   /**
-   * Fetches the list of teams for the current session from the API.
-   *
-   * Returns:
-   * - A promise that resolves to the list of teams or the default teams if the API call fails.
+   * Applies a full session state received from the server.
    */
-  const fetchTeams = () => {
-    return fetch(`${API_URL}/session/${sessionId}/teams`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setTeams(data || defaultTeams);
-        setLoading(false);
-        if (data.some((team: Team) => team.buzz_lock_owned)) {
-          setBuzzLock(true);
-          if (!hasPlayedBuzzerRef.current) {
-            const buzzerSound = new Audio("/sounds/buzz.mp3");
-            buzzerSound.play();
-            hasPlayedBuzzerRef.current = true;
-          }
-        } else {
-          setBuzzLock(false);
-          hasPlayedBuzzerRef.current = false;
-        }
-      });
-  };
+  const applyFullState = useCallback((session: any) => {
+    if (session.teams) {
+      setTeams(session.teams);
+    }
+    if (typeof session.buzz_lock === "boolean") {
+      setBuzzLock(session.buzz_lock);
+      if (session.buzz_lock && !hasPlayedBuzzerRef.current) {
+        const buzzerSound = new Audio("/sounds/buzz.mp3");
+        buzzerSound.play().catch(() => {});
+        hasPlayedBuzzerRef.current = true;
+      }
+      if (!session.buzz_lock) {
+        hasPlayedBuzzerRef.current = false;
+      }
+    }
+  }, []);
+
+  // Sync initial state from SessionContext when sessionState arrives
+  useEffect(() => {
+    if (sessionState) {
+      applyFullState(sessionState);
+    } else if (!sessionId) {
+      setTeams(defaultTeams);
+      setBuzzLock(false);
+    }
+  }, [sessionState, sessionId, applyFullState]);
 
   /**
-   * Handles the buzz-in action for a team.
-   *
-   * Parameters:
-   * - `teamIndex`: The index of the team that buzzed in.
-   *
-   * Behavior:
-   * - If no session is active and no buzz lock is set, sets the buzz lock and updates the team's state.
-   * - If a session is active, sends a buzz-in request to the API and updates the team's state based on the response.
+   * Handles individual WebSocket messages from the server.
+   * FullState is handled by SessionContext; we only handle incremental updates here.
+   */
+  const handleWsMessage = useCallback(
+    (event: MessageEvent) => {
+      try {
+        const msg = JSON.parse(event.data);
+        switch (msg.type) {
+          case "BuzzLocked":
+            setBuzzLock(true);
+            setTeams((prev) =>
+              prev.map((team, i) => ({
+                ...team,
+                buzz_lock_owned: i === msg.team_index,
+              }))
+            );
+            if (!hasPlayedBuzzerRef.current) {
+              const buzzerSound = new Audio("/sounds/buzz.mp3");
+              buzzerSound.play().catch(() => {});
+              hasPlayedBuzzerRef.current = true;
+            }
+            break;
+
+          case "BuzzReleased":
+            setBuzzLock(false);
+            setTeams((prev) =>
+              prev.map((team) => ({ ...team, buzz_lock_owned: false }))
+            );
+            hasPlayedBuzzerRef.current = false;
+            break;
+
+          case "ScoreUpdate":
+            setTeams((prev) =>
+              prev.map((team, i) =>
+                i === msg.team_index ? { ...team, score: msg.score } : team
+              )
+            );
+            break;
+
+          case "TeamNameUpdate":
+            setTeams((prev) =>
+              prev.map((team, i) =>
+                i === msg.team_index
+                  ? { ...team, team_name: msg.name }
+                  : team
+              )
+            );
+            break;
+
+          case "SessionClosed":
+            setSessionId(null);
+            setTeams(defaultTeams);
+            setBuzzLock(false);
+            break;
+        }
+      } catch {
+        // Ignore unparseable messages
+      }
+    },
+    [setSessionId]
+  );
+
+  // Register WebSocket message handler when session is active
+  useEffect(() => {
+    if (sessionId) {
+      setOnWsMessage(handleWsMessage);
+    } else {
+      setOnWsMessage(null);
+      setTeams(defaultTeams);
+      setBuzzLock(false);
+    }
+
+    return () => {
+      setOnWsMessage(null);
+    };
+  }, [sessionId, handleWsMessage, setOnWsMessage]);
+
+  /**
+   * Sends a WebSocket message if connected, otherwise falls back to HTTP.
+   */
+  const sendWsMessage = useCallback(
+    (msg: object) => {
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg));
+        return true;
+      }
+      return false;
+    },
+    [wsRef]
+  );
+
+  /**
+   * Buzz in for a team. Sends via WebSocket, falls back to HTTP if WS unavailable.
    */
   const buzzIn = (teamIndex: number) => {
     if (!sessionId && !buzzLock) {
       setBuzzLock(true);
-      setTeams((prevTeams) =>
-        prevTeams.map((team, index) =>
+      setTeams((prev) =>
+        prev.map((team, index) =>
           index === teamIndex
             ? { ...team, buzz_lock_owned: true }
             : { ...team, buzz_lock_owned: false }
@@ -111,26 +196,28 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    fetchTeams();
+    if (buzzLock) return;
 
-    if (buzzLock) {
+    // Try WebSocket first
+    if (
+      sendWsMessage({ type: "BuzzIn", team_index: teamIndex })
+    ) {
       return;
     }
 
+    // Fallback to HTTP
     fetch(`${API_URL}/session/${sessionId}/buzz/${teamIndex}`, {
       method: "POST",
     })
       .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error();
         return response.json();
       })
       .then((data) => {
-        if (data == "Success") {
+        if (data === "Success") {
           setBuzzLock(true);
-          setTeams((prevTeams) =>
-            prevTeams.map((team, index) =>
+          setTeams((prev) =>
+            prev.map((team, index) =>
               index === teamIndex
                 ? { ...team, buzz_lock_owned: true }
                 : { ...team, buzz_lock_owned: false }
@@ -142,44 +229,33 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   /**
-   * Releases the buzz lock for the current session.
-   *
-   * Behavior:
-   * - If no session is active, resets the buzz lock and updates the team's state.
-   * - If a session is active, sends a release request to the API and updates the team's state based on the response.
+   * Release the buzz lock. Sends via WebSocket, falls back to HTTP.
    */
   const releaseBuzzLock = () => {
     if (!sessionId) {
       setBuzzLock(false);
-      setTeams((prevTeams) =>
-        prevTeams.map((team) => ({ ...team, buzz_lock_owned: false }))
+      setTeams((prev) =>
+        prev.map((team) => ({ ...team, buzz_lock_owned: false }))
       );
       return;
     }
 
-    fetch(`${API_URL}/session/${sessionId}/buzz/release`, {
-      method: "POST",
-    })
-      .catch(() => {});
-
-    fetchTeams();
+    if (!sendWsMessage({ type: "ReleaseBuzz" })) {
+      // Fallback to HTTP
+      fetch(`${API_URL}/session/${sessionId}/buzz/release`, {
+        method: "POST",
+      }).catch(() => {});
+    }
   };
 
   /**
-   * Modifies the information of a specific team.
-   *
-   * Parameters:
-   * - `team`: The updated team information.
-   * - `index`: The index of the team to be updated.
-   *
-   * Behavior:
-   * - If no session is active, updates the team's state locally.
-   * - If a session is active, sends an update request to the API and updates the team's state based on the response.
+   * Modify a team's full info. Uses HTTP PUT (preserves existing behavior).
+   * Server broadcasts the update to WebSocket clients.
    */
   const modifyTeam = (team: Team, index: number) => {
     if (!sessionId) {
-      setTeams((prevTeams) =>
-        prevTeams.map((t, i) => (i === index ? team : t))
+      setTeams((prev) =>
+        prev.map((t, i) => (i === index ? team : t))
       );
       return;
     }
@@ -193,44 +269,13 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     })
       .then((response) => response.json())
       .then((data) => {
-        setTeams((prevTeams) =>
-          prevTeams.map((t, i) => (i === index ? data : t))
+        // Optimistic update; server broadcast will confirm
+        setTeams((prev) =>
+          prev.map((t, i) => (i === index ? data : t))
         );
       })
       .catch(() => {});
-    fetchTeams();
   };
-
-  /**
-   * Initializes the team state and sets up periodic fetching of team data.
-   *
-   * Behavior:
-   * - If no session is active, resets the team state to default values.
-   * - If a session is active, fetches the team data periodically and updates the state.
-   */
-  useEffect(() => {
-    if (!sessionId) {
-      setTeams(defaultTeams);
-      setBuzzLock(false);
-      setLoading(false);
-      return;
-    }
-
-    const internalFetchTeams = () => {
-      fetchTeams().catch(() => {
-        setSessionId(null);
-        setTeams(defaultTeams);
-        setLoading(false);
-        clearInterval(intervalId);
-      });
-    };
-
-    setLoading(true);
-    internalFetchTeams();
-    const intervalId = setInterval(internalFetchTeams, 200);
-
-    return () => clearInterval(intervalId);
-  }, [sessionId]);
 
   return (
     <TeamContext.Provider
@@ -251,14 +296,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-/**
- * useTeam is a custom hook to access the TeamContext.
- *
- * Throws an error if used outside of a TeamProvider.
- *
- * Returns:
- * - `TeamContextProps`: The context value containing scores, modifyScores, and loading state.
- */
 export const useTeam = (): TeamContextProps => {
   const context = useContext(TeamContext);
   if (!context) {
