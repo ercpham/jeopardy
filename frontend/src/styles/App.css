@@ -1,12 +1,48 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
+:root {
+  --bg-color: #f7f7f7;
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --card-bg: #ffffff;
+  --modal-bg: #ffffff;
+  --option-bg: #f7f7f7;
+  --border-color: #e0e0e0;
+  --timer-bg: #005ec2;
+  --button-bg: #ffffff;
+  --button-hover: #f1f1f1;
+  --button-active: #d8d8d8;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --menu-bg: #ffffff;
+  --session-bg: #f9f9f9;
+}
+
+:root.dark-mode {
+  --bg-color: #1a1a2e;
+  --text-color: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --card-bg: #16213e;
+  --modal-bg: #16213e;
+  --option-bg: #1a1a2e;
+  --border-color: #2a2a4a;
+  --timer-bg: #0a3d6e;
+  --button-bg: #1f4068;
+  --button-hover: #254b73;
+  --button-active: #162d50;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --menu-bg: #16213e;
+  --session-bg: #1a1a2e;
+}
+
 body,
 html {
   font-family: 'Lato', Arial, sans-serif;
   margin: 0;
   padding: 0;
   width: 100%;
-  background-color: #f7f7f7;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 h1 {
@@ -33,22 +69,22 @@ h5 {
 
 button {
   font-size: calc(1.4rem + 0.5vw);
-  background-color: #ffffff;
+  background-color: var(--button-bg);
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: transform 0.2s, background-color 0.2s;
-  color: #000000;
-  box-shadow: rgba(0, 0, 0, .1) 2px 2px 2px;
+  color: var(--text-color);
+  box-shadow: var(--shadow-color) 2px 2px 2px;
 }
 
 button:hover {
-  background-color: #f1f1f1;
+  background-color: var(--button-hover);
   transform: scale(1.05);
 }
 
 button:active {
-  background-color: #d8d8d8;
+  background-color: var(--button-active);
 }
 
 li {
@@ -66,6 +102,9 @@ select {
 
 input {
   font-size: calc(0.8rem + 0.4vw);
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
 input::-webkit-outer-spin-button,

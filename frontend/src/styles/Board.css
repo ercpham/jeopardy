@@ -27,8 +27,8 @@
 }
 
 .board-button.clicked {
-  background-color: #f1f1f1;
-  color: #ffffff;
+  background-color: var(--button-hover);
+  color: var(--text-secondary);
   cursor: default;
   transform: scale(0.98);
   opacity: 0.7;
@@ -36,7 +36,7 @@
 
 .board-button.recentlyClicked {
   border: 2px solid #005ec250;
-  color: #4f4f4f
+  color: var(--text-color);
 }
 
 .board-button.animate {

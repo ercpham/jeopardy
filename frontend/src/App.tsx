@@ -17,6 +17,7 @@ import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
 import { useSession } from "./context/SessionContext";
 import Menu from "./components/Menu";
+import Settings from "./components/Settings";
 
 const App: React.FC = () => {
   const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, hasPlayedBuzzerRef, loading } =
@@ -108,6 +109,7 @@ const App: React.FC = () => {
         >
           ☰
         </button>
+        <Settings />
         {buzzLock && !player && (
           <button
             onClick={releaseBuzzLock}
