@@ -11,8 +11,13 @@ interface BoardContextType {
   setClickedCells: React.Dispatch<React.SetStateAction<Set<string>>>;
   recentlyClickedIndex: number | null;
   setRecentlyClickedIndex: React.Dispatch<React.SetStateAction<number | null>>;
-  targetScore: number | null; // Add targetScore to the context
-  setTargetScore: React.Dispatch<React.SetStateAction<number | null>>; // Add setter for targetScore
+  targetScore: number | null;
+  setTargetScore: React.Dispatch<React.SetStateAction<number | null>>;
+  editableCategories: string[];
+  setEditableCategories: React.Dispatch<React.SetStateAction<string[]>>;
+  /** Fingerprint of the data-derived categories that were last used to seed editableCategories. */
+  sourceCategoriesKey: string;
+  setSourceCategoriesKey: React.Dispatch<React.SetStateAction<string>>;
   resetClickedCells: () => void;
 }
 
@@ -29,7 +34,9 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [clickedCells, setClickedCells] = useState<Set<string>>(new Set());
   const [recentlyClickedIndex, setRecentlyClickedIndex] = useState<number | null>(null);
-  const [targetScore, setTargetScore] = useState<number | null>(null); // Initialize targetScore state
+  const [targetScore, setTargetScore] = useState<number | null>(null);
+  const [editableCategories, setEditableCategories] = useState<string[]>([]);
+  const [sourceCategoriesKey, setSourceCategoriesKey] = useState<string>("");
 
   /**
    * Resets the clicked cells to an empty set.
@@ -37,6 +44,8 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
   const resetClickedCells = () => {
     setClickedCells(new Set());
     setTargetScore(0);
+    setEditableCategories([]);
+    setSourceCategoriesKey("");
   };
 
   return (
@@ -47,7 +56,11 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
         recentlyClickedIndex,
         setRecentlyClickedIndex,
         targetScore,
-        setTargetScore, // Provide setTargetScore in the context
+        setTargetScore,
+        editableCategories,
+        setEditableCategories,
+        sourceCategoriesKey,
+        setSourceCategoriesKey,
         resetClickedCells,
       }}
     >
@@ -62,7 +75,7 @@ export const BoardProvider: React.FC<{ children: ReactNode }> = ({
  * Throws an error if used outside of a BoardProvider.
  * 
  * Returns:
- * - `BoardContextType`: The context value containing clickedCells, setClickedCells, recentlyClickedIndex, setRecentlyClickedIndex, targetScore, setTargetScore, and resetClickedCells.
+ * - `BoardContextType`: The context value containing clickedCells, setClickedCells, recentlyClickedIndex, setRecentlyClickedIndex, targetScore, setTargetScore, editableCategories, setEditableCategories, and resetClickedCells.
  */
 export const useBoard = (): BoardContextType => {
   const context = useContext(BoardContext);

@@ -31,10 +31,13 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     recentlyClickedIndex,
     setRecentlyClickedIndex,
     setTargetScore,
+    editableCategories,
+    setEditableCategories,
+    sourceCategoriesKey,
+    setSourceCategoriesKey,
   } = useBoard();
   const [animate, setAnimate] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editableCategories, setEditableCategories] = useState<string[]>([]);
 
   const { numColumns, numRows, computedCategories, normalizedQuestions } = useMemo(() => {
     if (questions.length === 0) {
@@ -133,9 +136,17 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     };
   }, [questions]);
 
+  // Seed editableCategories from computed data only when the source data has actually
+  // changed (new file loaded). We track a fingerprint of the last-seeded source categories
+  // in context so the comparison survives navigation / remounts.
+  const computedCategoriesKey = computedCategories.join("||");
   useEffect(() => {
-    setEditableCategories(computedCategories);
-  }, [computedCategories]);
+    if (computedCategoriesKey !== sourceCategoriesKey) {
+      setEditableCategories(computedCategories);
+      setSourceCategoriesKey(computedCategoriesKey);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [computedCategoriesKey]);
 
   useEffect(() => {
     if (triggerAnimation) {
@@ -192,7 +203,7 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
           gridTemplateRows: `3rem repeat(${numRows}, 1fr)`,
         } as React.CSSProperties}
       >
-        {editableCategories.map((category, index) => (
+        {(editableCategories.length > 0 ? editableCategories : computedCategories).map((category, index) => (
           <div key={index} className="category">
             {editingIndex === index ? (
               <input
