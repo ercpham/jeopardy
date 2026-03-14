@@ -20,7 +20,9 @@ const Score: React.FC<{
   team: Team;
   controls: boolean;
   modifyTeam: (updatedTeam: Team) => void;
-}> = ({ team, controls, modifyTeam }) => {
+  managingTeams?: boolean;
+  removeTeam?: () => void;
+}> = ({ team, controls, modifyTeam, managingTeams = false, removeTeam }) => {
   const [inputValue, setInputValue] = useState<number>(0);
   const { targetScore } = useBoard(); // Access targetScore from context
   const [isEditingName, setIsEditingName] = useState(false); // Track if editing team name
@@ -55,19 +57,26 @@ const Score: React.FC<{
 
   return (
     <div className={`scorecard ${team.buzz_lock_owned ? "active" : ""} ${controls ? "" : "no-controls"}`}>
-      {isEditingName ? (
-        <input
-          className={"team-name-input"}
-          type="text"
-          value={teamName.toString()}
-          onChange={(e) => setTeamName(e.target.value)}
-          onBlur={handleBlurOrEnter}
-          onKeyDown={handleBlurOrEnter}
-          autoFocus
-        />
-      ) : (
-        <h4 onClick={() => setIsEditingName(true)}>{team.team_name}</h4>
-      )}
+      <div className="team-name-row">
+        {isEditingName ? (
+          <input
+            className={"team-name-input"}
+            type="text"
+            value={teamName.toString()}
+            onChange={(e) => setTeamName(e.target.value)}
+            onBlur={handleBlurOrEnter}
+            onKeyDown={handleBlurOrEnter}
+            autoFocus
+          />
+        ) : (
+          <h4 onClick={() => setIsEditingName(true)}>{team.team_name}</h4>
+        )}
+        {managingTeams && controls && removeTeam && (
+          <button className="remove-team-button" onClick={removeTeam} aria-label="Remove Team">
+            ×
+          </button>
+        )}
+      </div>
       <h1>{team.score}</h1>
       {controls && (
         <div className="score-controls">

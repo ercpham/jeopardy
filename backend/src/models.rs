@@ -48,6 +48,8 @@ pub enum WsClientMsg {
     UpdateTeamName { team_index: usize, name: String },
     UpdateDarkMode { enabled: bool },
     UpdateTimerEnabled { enabled: bool },
+    AddTeam,
+    RemoveTeam { team_index: usize },
 }
 
 /// Messages sent from server to client over WebSocket.
@@ -62,6 +64,8 @@ pub enum WsServerMsg {
     TeamNameUpdate { team_index: usize, name: String },
     DarkModeUpdate { enabled: bool },
     TimerEnabledUpdate { enabled: bool },
+    TeamAdded { team: Team },
+    TeamRemoved { team_index: usize },
     SessionClosed,
 }
 

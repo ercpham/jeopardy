@@ -10,9 +10,19 @@ interface MenuProps {
   joinSession: (sessionId: string) => void;
   leaveSession: () => void;
   toggleScores: () => void;
-  setQuestions: (questions: any[]) => void;
+  setQuestions: (questions: {
+    id: string;
+    revealed: boolean;
+    questionText?: string;
+    answerText?: string;
+    referenceText?: string;
+    category?: string;
+    pointValue?: number;
+  }[]) => void;
   handleResetBoardState: () => void;
   player: boolean;
+  toggleManagingTeams: () => void;
+  managingTeams: boolean;
 }
 
 const Menu: React.FC<MenuProps> = ({
@@ -26,6 +36,8 @@ const Menu: React.FC<MenuProps> = ({
   setQuestions,
   handleResetBoardState,
   player,
+  toggleManagingTeams,
+  managingTeams,
 }) => {
   const [joinSessionId, setJoinSessionId] = useState("");
   const [copyMessageVisible, setCopyMessageVisible] = useState(false);
@@ -46,9 +58,17 @@ const Menu: React.FC<MenuProps> = ({
       const hasCategory = headers.includes("Category");
       const hasPointValue = headers.includes("Point Value");
 
-      let parsedQuestions = questionLines.map((line, index) => {
+      const parsedQuestions = questionLines.map((line, index) => {
         const values = line.split("\t");
-        const question: any = {
+        const question: {
+          id: string;
+          revealed: boolean;
+          questionText?: string;
+          answerText?: string;
+          referenceText?: string;
+          category?: string;
+          pointValue?: number;
+        } = {
           id: `${index + 1}`,
           revealed: false,
         };
@@ -125,6 +145,9 @@ const Menu: React.FC<MenuProps> = ({
         </li>
         <li onClick={handleResetBoardState}>Reset Board</li>
         <li onClick={toggleScores}>Toggle Scores</li>
+        <li onClick={toggleManagingTeams}>
+          {managingTeams ? "Exit Team Management" : "Add/Remove Teams"}
+        </li>
         <li
           onClick={() => {
             if (sessionId && player) {

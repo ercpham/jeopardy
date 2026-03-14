@@ -20,7 +20,7 @@ import Menu from "./components/Menu";
 import Settings from "./components/Settings";
 
 const App: React.FC = () => {
-  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, hasPlayedBuzzerRef, loading } =
+  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, hasPlayedBuzzerRef, loading, addTeam, removeTeam } =
     useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells, setRecentlyClickedIndex } = useBoard();
@@ -31,6 +31,7 @@ const App: React.FC = () => {
   const [triggerAnimation, setTriggerAnimation] = useState(false);
   const [boardKey, setBoardKey] = useState(0);
   const [player, setPlayer] = useState(false);
+  const [managingTeams, setManagingTeams] = useState(false);
 
   useEffect(() => {
     if (sessionId === null) {
@@ -44,6 +45,10 @@ const App: React.FC = () => {
 
   const toggleScores = () => {
     setShowScores((prev) => !prev);
+  };
+
+  const toggleManagingTeams = () => {
+    setManagingTeams((prev) => !prev);
   };
 
   const handleJoinSession = (sessionId: string) => {
@@ -100,6 +105,8 @@ const App: React.FC = () => {
         setQuestions={setQuestions}
         handleResetBoardState={handleResetBoardState}
         player={player}
+        toggleManagingTeams={toggleManagingTeams}
+        managingTeams={managingTeams}
       />
        <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
          <button
@@ -140,6 +147,9 @@ const App: React.FC = () => {
             loading={loading}
             player={player}
             modifyTeam={modifyTeam}
+            managingTeams={managingTeams}
+            addTeam={addTeam}
+            removeTeam={removeTeam}
           />
         )}
       </div>

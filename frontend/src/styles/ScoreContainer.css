@@ -1,14 +1,42 @@
 .score-container {
-  display: flex;
-  justify-content: space-around;
   width: 80vw;
   height: 20vh;
   z-index: 1000;
-  overflow-x: scroll;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow-x: auto;
   box-sizing: border-box;
   min-height: 8rem; /* Set a minimum height */
+  scrollbar-width: thin;
+  scrollbar-color: var(--button-bg) transparent;
+}
+
+.score-container-inner {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 calc((80vw - min(80vw, 100%)) / 2);
+  min-width: min-content;
+}
+
+/* Ensure items don't shrink and maintain their width */
+.wrapper {
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  flex: 0 0 auto;
+  width: 18rem;
+  height: 100%;
+  padding: 1rem 1rem 0rem 1rem;
+}
+
+.add-team-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  flex: 0 0 auto;
+  width: 6rem;
 }
 
 .score-container.player {
@@ -16,14 +44,69 @@
 }
 
 .score-container::-webkit-scrollbar {
-  display: none;
+  height: 8px;
+}
+
+.score-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.score-container::-webkit-scrollbar-thumb {
+  background-color: var(--button-bg);
+  border-radius: 4px;
+}
+
+.score-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--button-hover);
+}
+
+.score-container.player .score-container-inner {
+  justify-content: center;
+  width: 100%;
 }
 
 .wrapper {
   display: block;
   box-sizing: border-box;
   margin: 0;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 18rem;
   height: 100%;
   padding: 1rem 1rem 0rem 1rem;
+}
+
+.add-team-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  flex: 0 0 auto;
+  width: 6rem;
+}
+
+.add-team-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.add-team-button {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: none;
+  font-size: 2rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.add-team-button:hover {
+  background-color: var(--button-hover);
+  transform: scale(1.1);
 }

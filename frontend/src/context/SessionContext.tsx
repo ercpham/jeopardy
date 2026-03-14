@@ -7,18 +7,31 @@ import React, {
   useEffect,
 } from "react";
 
+interface SessionTeam {
+  team_name: string;
+  score: number;
+  buzz_lock_owned: boolean;
+}
+
+interface SessionState {
+  teams: SessionTeam[];
+  buzz_lock: boolean;
+  dark_mode: boolean;
+  timer_enabled: boolean;
+  created_at: string;
+  last_modified: string;
+}
+
 /**
- * SessionContext provides state management for user sessions and WebSocket connections.
- *
- * Manages the session ID, WebSocket connection with auto-reconnect (exponential backoff),
- * captures the initial FullState from the server, and exposes the WebSocket ref
+ * SessionContext provides WebSocket-based session lifecycle management.
+ * Handles session creation, joining, WebSocket connection, automatic reconnection,
  * and message handler setter for TeamContext.
  */
 interface SessionContextProps {
   sessionId: string | null;
   sessionLoading: boolean;
   wsConnected: boolean;
-  sessionState: any | null;
+  sessionState: SessionState | null;
   startSession: () => Promise<void>;
   closeSession: () => Promise<void>;
   joinSession: (id: string) => Promise<void>;
@@ -51,7 +64,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
   const [wsConnected, setWsConnected] = useState<boolean>(false);
-  const [sessionState, setSessionState] = useState<any | null>(null);
+  const [sessionState, setSessionState] = useState<SessionState | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const onWsMessageRef = useRef<((event: MessageEvent) => void) | null>(null);
   const wsListenersRef = useRef<Set<(event: MessageEvent) => void>>(new Set());
