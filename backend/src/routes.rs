@@ -208,13 +208,35 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
              drop(sessions);
              broadcast(state, session_id, &WsServerMsg::DarkModeUpdate { enabled }).await;
          }
-         WsClientMsg::UpdateTimerEnabled { enabled } => {
-             session.timer_enabled = enabled;
-             session.last_modified = Utc::now();
-             drop(session);
-             drop(sessions);
-             broadcast(state, session_id, &WsServerMsg::TimerEnabledUpdate { enabled }).await;
-         }
+WsClientMsg::UpdateTimerEnabled { enabled } => {
+              session.timer_enabled = enabled;
+              session.last_modified = Utc::now();
+              drop(session);
+              drop(sessions);
+              broadcast(state, session_id, &WsServerMsg::TimerEnabledUpdate { enabled }).await;
+          }
+          WsClientMsg::AddTeam => {
+              let new_team_index = session.teams.len();
+              let new_team = Team {
+                  team_name: format!("Team {}", new_team_index + 1),
+                  score: 0,
+                  buzz_lock_owned: false,
+              };
+              session.teams.push(new_team.clone());
+              session.last_modified = Utc::now();
+              drop(session);
+              drop(sessions);
+              broadcast(state, session_id, &WsServerMsg::TeamAdded { team: new_team }).await;
+          }
+          WsClientMsg::RemoveTeam { team_index } => {
+              if team_index < session.teams.len() {
+                  session.teams.remove(team_index);
+                  session.last_modified = Utc::now();
+                  drop(session);
+                  drop(sessions);
+                  broadcast(state, session_id, &WsServerMsg::TeamRemoved { team_index }).await;
+              }
+          }
      }
 }
 

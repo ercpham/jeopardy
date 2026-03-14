@@ -16,7 +16,7 @@ import { useSession } from "./SessionContext";
  * listens for server broadcasts to update React state.
  */
 export interface Team {
-  team_name: String;
+  team_name: string;
   score: number;
   buzz_lock_owned: boolean;
 }
@@ -32,6 +32,8 @@ interface TeamContextProps {
   selectedTeam: number;
   setSelectedTeam: React.Dispatch<React.SetStateAction<number>>;
   loading: boolean;
+  addTeam: () => void;
+  removeTeam: (index: number) => void;
 }
 
 const defaultTeams: Team[] = [
@@ -61,7 +63,14 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   /**
    * Applies a full session state received from the server.
    */
-  const applyFullState = useCallback((session: any) => {
+  const applyFullState = useCallback((session: {
+    teams: Team[];
+    buzz_lock: boolean;
+    dark_mode: boolean;
+    timer_enabled: boolean;
+    created_at: string;
+    last_modified: string;
+  }) => {
     if (session.teams) {
       setTeams(session.teams);
     }
@@ -144,7 +153,13 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
              setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false })));
              break;
 
-           case "SessionClosed":
+           case "TeamAdded":
+            setTeams((prev) => [...prev, msg.team]);
+            break;
+          case "TeamRemoved":
+            setTeams((prev) => prev.filter((_, i) => i !== msg.team_index));
+            break;
+          case "SessionClosed":
             setSessionId(null);
             setTeams(defaultTeams);
             setBuzzLock(false);
@@ -270,10 +285,10 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
      setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false })));
    };
 
-   /**
-    * Modify a team's full info. Uses HTTP PUT (preserves existing behavior).
-    * Server broadcasts the update to WebSocket clients.
-    */
+/**
+   * Modify a team's full info. Uses HTTP PUT (preserves existing behavior).
+   * Server broadcasts the update to WebSocket clients.
+   */
   const modifyTeam = (team: Team, index: number) => {
     if (!sessionId) {
       setTeams((prev) =>
@@ -299,6 +314,36 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
       .catch(() => {});
   };
 
+  /**
+   * Add a new team. Sends via WebSocket.
+   */
+  const addTeam = () => {
+    if (!sessionId) {
+      const newTeamIndex = teams.length;
+      const newTeam: Team = {
+        team_name: `Team ${newTeamIndex + 1}`,
+        score: 0,
+        buzz_lock_owned: false,
+      };
+      setTeams((prev) => [...prev, newTeam]);
+      return;
+    }
+
+    sendWsMessage({ type: "AddTeam" });
+  };
+
+  /**
+   * Remove a team. Sends via WebSocket.
+   */
+  const removeTeam = (teamIndex: number) => {
+    if (!sessionId) {
+      setTeams((prev) => prev.filter((_, i) => i !== teamIndex));
+      return;
+    }
+
+    sendWsMessage({ type: "RemoveTeam", team_index: teamIndex });
+  };
+
   return (
     <TeamContext.Provider
       value={{
@@ -312,6 +357,8 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
         loading,
         selectedTeam,
         setSelectedTeam,
+        addTeam,
+        removeTeam,
       }}
     >
       {children}

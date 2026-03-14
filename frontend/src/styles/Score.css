@@ -53,18 +53,50 @@
   margin: 0;
 }
 
-.scorecard h4 {
+.team-name-row {
   display: flex;
-  align-items: center; /* Center text vertically */
-  justify-content: center; /* Center text horizontally */
-  /* padding-top: 1rem; */
-  margin: 0rem;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 1rem;
+  padding: 0 0.5rem;
+}
+
+.team-name-row h4 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
   cursor: pointer;
+  flex: 1;
+}
+
+.remove-team-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 3px;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.remove-team-button:hover {
+  opacity: 1;
+  background-color: rgba(255, 77, 77, 0.2);
 }
 
 
-.scorecard button {
+.scorecard button:not(.remove-team-button) {
   border: none;
   font-size: calc(1rem + 0.5vw);
   height: 2rem;
