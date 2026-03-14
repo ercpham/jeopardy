@@ -86,6 +86,13 @@
   font-size: 1.1em;
 }
 
+.timer-display .timer-paused {
+  margin-left: 0.3rem;
+  font-size: 0.8em;
+  opacity: 0.85;
+  font-style: italic;
+}
+
 .timer-display .timer-expired {
   margin-left: 0.3rem;
   animation: pulse 0.8s infinite;

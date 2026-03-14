@@ -101,16 +101,16 @@ const App: React.FC = () => {
         handleResetBoardState={handleResetBoardState}
         player={player}
       />
-      <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
-        <button
-          className="hamburger-button"
-          onClick={toggleMenu}
-          aria-label="Open Menu"
-        >
-          ☰
-        </button>
-        <Settings />
-        {buzzLock && !player && (
+       <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
+         <button
+           className="hamburger-button"
+           onClick={toggleMenu}
+           aria-label="Open Menu"
+         >
+           ☰
+         </button>
+         {!player && <Settings />}
+         {buzzLock && !player && (
           <button
             onClick={releaseBuzzLock}
             className={"lock-button"}

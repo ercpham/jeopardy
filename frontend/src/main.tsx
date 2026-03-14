@@ -16,8 +16,8 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <SettingsProvider>
-        <SessionProvider>
+      <SessionProvider>
+        <SettingsProvider>
           <TeamProvider>
             <QuestionsProvider>
               <BoardProvider>
@@ -25,8 +25,8 @@ root.render(
               </BoardProvider>
             </QuestionsProvider>
           </TeamProvider>
-        </SessionProvider>
-      </SettingsProvider>
+        </SettingsProvider>
+      </SessionProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

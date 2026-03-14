@@ -10,13 +10,17 @@ const Question: React.FC<{
   answerText: string;
   referenceText: string;
   revealed: boolean;
+  buzzLock: boolean;
   onRevealAnswer: () => void;
+  onTimerExpired?: () => void;
 }> = ({
   questionText,
   answerText,
   referenceText,
   revealed,
+  buzzLock,
   onRevealAnswer,
+  onTimerExpired,
 }) => {
   const navigate = useNavigate();
   const { timerEnabled } = useSettings();
@@ -24,27 +28,51 @@ const Question: React.FC<{
   const [timerExpired, setTimerExpired] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Keep a stable ref to onTimerExpired so it never triggers a timer restart
+  const onTimerExpiredRef = useRef(onTimerExpired);
+  useEffect(() => {
+    onTimerExpiredRef.current = onTimerExpired;
+  }, [onTimerExpired]);
+
+  // Reset timer state when a new question is shown or timer toggled
   useEffect(() => {
     if (timerEnabled && !revealed) {
       setTimeLeft(TIMER_DURATION);
       setTimerExpired(false);
-
-      intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-            setTimerExpired(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-      };
     }
   }, [timerEnabled, revealed]);
+
+  // Tick the timer — pauses when buzzLock is true
+  useEffect(() => {
+    if (!timerEnabled || revealed || timerExpired) return;
+    if (buzzLock) {
+      // Paused — clear any running interval and do nothing
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          setTimerExpired(true);
+          onTimerExpiredRef.current?.();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [timerEnabled, revealed, timerExpired, buzzLock]);
 
   const handleGoHome = () => {
     navigate("/");
@@ -57,6 +85,7 @@ const Question: React.FC<{
   };
 
   const getTimerClass = () => {
+    if (timerExpired) return "timer-critical";
     if (timeLeft <= 5) return "timer-critical";
     if (timeLeft <= 10) return "timer-warning";
     return "";
@@ -88,8 +117,12 @@ const Question: React.FC<{
         {timerEnabled && !revealed && (
           <div className={`timer-display ${getTimerClass()}`}>
             <span className="timer-icon">⏱</span>
-            <span className="timer-text">{formatTime(timeLeft)}</span>
-            {timerExpired && <span className="timer-expired">Time's up!</span>}
+            <span className="timer-text">
+              {timerExpired ? "Time's up!" : formatTime(timeLeft)}
+            </span>
+            {buzzLock && !timerExpired && (
+              <span className="timer-paused">Paused</span>
+            )}
           </div>
         )}
         <div className="question-content">
