@@ -66,10 +66,22 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     if (hasCategories) {
       cats = uniqueCategories;
       columns = cats.length;
-      questionsByCategory = cats.map((cat) =>
-        questions.filter((q) => q.category === cat)
-      );
+      questionsByCategory = cats.map((cat) => {
+        const catQuestions = questions.filter((q) => q.category === cat);
+        return catQuestions;
+      });
       rows = Math.max(...questionsByCategory.map((arr) => arr.length), 1);
+      for (let col = 0; col < columns; col++) {
+        while (questionsByCategory[col].length < rows) {
+          questionsByCategory[col].push({
+            id: `blank-${questionsByCategory[col].length}-${col}`,
+            questionText: "",
+            answerText: "",
+            referenceText: "",
+            revealed: false,
+          });
+        }
+      }
     } else {
       const totalQuestions = questions.length;
       const targetRows = [5, 4, 3];
