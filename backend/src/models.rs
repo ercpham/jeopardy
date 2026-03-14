@@ -1,17 +1,14 @@
 //! Data models for the Bible Challenge backend server.
-//! This module defines the structures used for sessions, scores, and questions.
+//! This module defines the structures used for sessions, scores, questions,
+//! WebSocket messages, and shared application state.
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::{Mutex as AsyncMutex, RwLock};
 
 /// Represents a question in the Bible Challenge.
-///
-/// Fields:
-/// - `id`: Unique identifier for the question.
-/// - `question_text`: The text of the question.
-/// - `answer_text`: The answer to the question.
-/// - `reference_text`: The reference text for the question.
-/// - `revealed`: Whether the answer has been revealed.
 #[derive(Serialize, Deserialize)]
 pub struct Question {
     pub id: String,
@@ -22,11 +19,6 @@ pub struct Question {
 }
 
 /// Represents a team in the Bible Challenge.
-///
-/// Fields:
-/// - `team_name`: The name of the team.
-/// - `score`: The score of the team.
-/// - `buzz_lock_owned`: Whether the team owns the buzz lock.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Team {
     pub team_name: String,
@@ -35,16 +27,47 @@ pub struct Team {
 }
 
 /// Represents a session in the Bible Challenge.
-///
-/// Fields:
-/// - `teams`: The list of teams participating in the session.
-/// - `buzz_lock`: Whether the buzz lock is currently active.
-/// - `created_at`: The timestamp when the session was created.
-/// - `last_modified`: The timestamp when the session was last modified.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Session {
     pub teams: Vec<Team>,
     pub buzz_lock: bool,
     pub created_at: DateTime<Utc>,
     pub last_modified: DateTime<Utc>,
+}
+
+/// Messages sent from client to server over WebSocket.
+#[derive(Deserialize)]
+#[serde(tag = "type")]
+pub enum WsClientMsg {
+    BuzzIn { team_index: usize },
+    ReleaseBuzz,
+    UpdateScore { team_index: usize, score: i32 },
+    UpdateTeamName { team_index: usize, name: String },
+}
+
+/// Messages sent from server to client over WebSocket.
+#[derive(Serialize, Clone)]
+#[serde(tag = "type")]
+pub enum WsServerMsg {
+    FullState { session: Session },
+    BuzzLocked { team_index: usize },
+    BuzzReleased,
+    ScoreUpdate { team_index: usize, score: i32 },
+    TeamNameUpdate { team_index: usize, name: String },
+    SessionClosed,
+}
+
+/// Shared application state injected into route handlers via Axum's State extractor.
+pub struct AppState {
+    pub sessions: RwLock<HashMap<String, AsyncMutex<Session>>>,
+    pub ws_clients: RwLock<HashMap<String, Vec<tokio::sync::mpsc::UnboundedSender<String>>>>,
+}
+
+impl AppState {
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
+            sessions: RwLock::new(HashMap::new()),
+            ws_clients: RwLock::new(HashMap::new()),
+        })
+    }
 }

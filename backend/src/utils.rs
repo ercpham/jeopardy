@@ -1,22 +1,39 @@
 //! Utility functions for the Bible Challenge backend server.
-//! This module provides helper functions for session management.
+//! Provides session cleanup and other helper functions.
 
-use crate::SESSIONS;
+use crate::models::AppState;
 use chrono::Utc;
 
-/// Cleans up expired sessions from the global session map.
+/// Cleans up expired sessions and their associated WebSocket clients.
 ///
-/// - Iterates through all sessions and removes those that have been inactive.
-/// - A session is considered inactive if it has not been modified for 20 minutes.
-///   The `last_modified` field is updated whenever the session is changed.
+/// A session is considered expired if it has not been modified for 20 minutes.
+pub async fn cleanup_sessions(state: &AppState) {
+    let mut sessions = state.sessions.write().await;
+    let expired: Vec<String> = sessions
+        .iter()
+        .filter_map(|(id, session_mutex)| {
+            let session = futures::executor::block_on(session_mutex.lock());
+            let expired = Utc::now()
+                .signed_duration_since(session.last_modified)
+                .num_seconds()
+                >= 20 * 60;
+            if expired {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
 
-pub async fn cleanup_sessions() {
-    let mut sessions = SESSIONS.write().await;
-    sessions.retain(|_, session_mutex| {
-        let session = futures::executor::block_on(session_mutex.lock());
-        Utc::now()
-            .signed_duration_since(session.last_modified)
-            .num_seconds()
-            < 20 * 60 // 20 minutes
-    });
+    for id in &expired {
+        sessions.remove(id);
+    }
+
+    // Clean up WS clients for expired sessions
+    if !expired.is_empty() {
+        let mut clients = state.ws_clients.write().await;
+        for id in &expired {
+            clients.remove(id);
+        }
+    }
 }

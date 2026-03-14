@@ -1,39 +1,163 @@
-import React, { createContext, useContext, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+} from "react";
 
 /**
- * SessionContext provides state management for user sessions in the application.
- * 
- * This context is used to manage the session ID and handle session-related operations.
+ * SessionContext provides state management for user sessions and WebSocket connections.
+ *
+ * Manages the session ID, WebSocket connection with auto-reconnect (exponential backoff),
+ * captures the initial FullState from the server, and exposes the WebSocket ref
+ * and message handler setter for TeamContext.
  */
 interface SessionContextProps {
   sessionId: string | null;
   sessionLoading: boolean;
+  wsConnected: boolean;
+  sessionState: any | null;
   startSession: () => Promise<void>;
   closeSession: () => Promise<void>;
   joinSession: (id: string) => Promise<void>;
   setSessionId: (id: string | null) => void;
+  wsRef: React.MutableRefObject<WebSocket | null>;
+  setOnWsMessage: (
+    handler: ((event: MessageEvent) => void) | null
+  ) => void;
 }
 
-const SessionContext = createContext<SessionContextProps | undefined>(
-  undefined
-);
+const SessionContext = createContext<SessionContextProps | undefined>(undefined);
 
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:3000";
 
 /**
- * SessionProvider component wraps its children with the SessionContext.
- * 
- * Props:
- * - `children`: The child components that will have access to the SessionContext.
+ * Derives a WebSocket URL from the HTTP API URL.
+ * Converts http:// → ws:// and https:// → wss://
  */
+function getWsUrl(sessionId: string): string {
+  const wsBase = API_URL.replace(/^http/, "ws");
+  return `${wsBase}/session/${sessionId}/ws`;
+}
+
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState<boolean>(false);
+  const [wsConnected, setWsConnected] = useState<boolean>(false);
+  const [sessionState, setSessionState] = useState<any | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const onWsMessageRef = useRef<((event: MessageEvent) => void) | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const intentionalCloseRef = useRef(false);
+
+  const setOnWsMessage = useCallback(
+    (handler: ((event: MessageEvent) => void) | null) => {
+      onWsMessageRef.current = handler;
+    },
+    []
+  );
+
+  const connectWs = useCallback(
+    (id: string) => {
+      // Clean up any existing connection
+      if (wsRef.current) {
+        intentionalCloseRef.current = true;
+        wsRef.current.close();
+        intentionalCloseRef.current = false;
+      }
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+
+      const url = getWsUrl(id);
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
+      setWsConnected(false);
+
+      ws.onopen = () => {
+        setWsConnected(true);
+        reconnectAttemptsRef.current = 0;
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "FullState") {
+            setSessionState(msg.session);
+          }
+        } catch {
+          // Ignore unparseable messages
+        }
+        if (onWsMessageRef.current) {
+          onWsMessageRef.current(event);
+        }
+      };
+
+      ws.onclose = () => {
+        setWsConnected(false);
+        wsRef.current = null;
+
+        // Don't reconnect if close was intentional or session is cleared
+        if (intentionalCloseRef.current || sessionId === null) return;
+
+        // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
+        const attempt = reconnectAttemptsRef.current;
+        const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
+        reconnectAttemptsRef.current = attempt + 1;
+
+        reconnectTimerRef.current = setTimeout(() => {
+          connectWs(id);
+        }, delay);
+      };
+
+      ws.onerror = () => {
+        // Error will trigger onclose, which handles reconnection
+      };
+    },
+    [sessionId]
+  );
+
+  // Establish or tear down WebSocket when sessionId changes
+  useEffect(() => {
+    if (sessionId) {
+      intentionalCloseRef.current = false;
+      setSessionState(null);
+      connectWs(sessionId);
+    } else {
+      intentionalCloseRef.current = true;
+      setSessionState(null);
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      setWsConnected(false);
+    }
+
+    return () => {
+      intentionalCloseRef.current = true;
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+    };
+  }, [sessionId, connectWs]);
 
   const startSession = async () => {
-    setSessionLoading(true); 
+    setSessionLoading(true);
     try {
       const response = await fetch(`${API_URL}/session/start`, {
         method: "POST",
@@ -49,19 +173,18 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const closeSession = async () => {
     if (!sessionId) return;
-
     try {
       await fetch(`${API_URL}/session/${sessionId}/close`, {
         method: "POST",
       });
-      setSessionId(null);
     } catch (error) {
       console.error("Error closing session:", error);
     }
+    setSessionId(null);
   };
 
   const joinSession = async (id: string) => {
-    setSessionLoading(true); 
+    setSessionLoading(true);
     try {
       const response = await fetch(`${API_URL}/session/${id}`);
       if (response.ok) {
@@ -76,12 +199,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  /**
-   * Sets the session ID to a new value.
-   * 
-   * Parameters:
-   * - `id`: The new session ID to be set.
-   */
   const setSessionIdExternally = (id: string | null) => {
     setSessionId(id);
   };
@@ -91,10 +208,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         sessionId,
         sessionLoading,
+        wsConnected,
+        sessionState,
         startSession,
         closeSession,
         joinSession,
         setSessionId: setSessionIdExternally,
+        wsRef,
+        setOnWsMessage,
       }}
     >
       {children}
@@ -102,14 +223,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-/**
- * useSession is a custom hook to access the SessionContext.
- * 
- * Throws an error if used outside of a SessionProvider.
- * 
- * Returns:
- * - `SessionContextProps`: The context value containing sessionId and setSessionId.
- */
 export const useSession = (): SessionContextProps => {
   const context = useContext(SessionContext);
   if (!context) {
