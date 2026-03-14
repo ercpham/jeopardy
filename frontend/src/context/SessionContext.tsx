@@ -64,7 +64,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
       onWsMessageRef.current = handler;
     },
     []
-  );
+   );
 
   const addWsListener = useCallback((handler: (event: MessageEvent) => void) => {
     wsListenersRef.current.add(handler);
@@ -106,11 +106,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         } catch {
           // Ignore unparseable messages
         }
-        if (onWsMessageRef.current) {
-          onWsMessageRef.current(event);
-        }
-        wsListenersRef.current.forEach((listener) => listener(event));
-      };
+         if (onWsMessageRef.current) {
+           onWsMessageRef.current(event);
+         }
+         wsListenersRef.current.forEach((listener) => listener(event));
+       };
 
       ws.onclose = () => {
         setWsConnected(false);
@@ -227,11 +227,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({
         closeSession,
         joinSession,
         setSessionId: setSessionIdExternally,
-        wsRef,
-        setOnWsMessage,
-        addWsListener,
-        removeWsListener,
-      }}
+         wsRef,
+         setOnWsMessage,
+         addWsListener,
+         removeWsListener,
+       }}
     >
       {children}
     </SessionContext.Provider>
