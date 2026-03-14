@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBoard } from "../context/BoardContext";
 import { Question } from "../context/QuestionsContext";
 import "../styles/Board.css";
 
 /**
- * Board component renders a 5x5 grid of buttons representing questions.
+ * Board component renders a dynamic grid of buttons representing questions.
  * 
  * Props:
  * - `questions`: An array of Question objects to populate the board.
@@ -18,6 +18,7 @@ import "../styles/Board.css";
  * - Handles animations for button clicks.
  * - Highlights the most recently clicked button.
  * - Allows editing of category headers above the board.
+ * - Dynamically adjusts columns based on number of categories.
  */
 const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
   questions,
@@ -32,10 +33,97 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
     setTargetScore,
   } = useBoard();
   const [animate, setAnimate] = useState(false);
-  const [categories, setCategories] = useState(
-    Array.from({ length: 6 }, (_, index) => `Category ${index + 1}`)
-  );
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editableCategories, setEditableCategories] = useState<string[]>([]);
+
+  const { numColumns, numRows, computedCategories, normalizedQuestions } = useMemo(() => {
+    if (questions.length === 0) {
+      return {
+        numColumns: 1,
+        numRows: 1,
+        computedCategories: ["Category 1"],
+        normalizedQuestions: [{
+          id: "blank-0-0",
+          questionText: "",
+          answerText: "",
+          referenceText: "",
+          revealed: false,
+        }],
+      };
+    }
+
+    const uniqueCategories = Array.from(
+      new Set(questions.map((q) => q.category).filter((c): c is string => !!c))
+    );
+
+    const hasCategories = uniqueCategories.length > 0;
+
+    let columns: number;
+    let rows: number;
+    let cats: string[];
+    let questionsByCategory: Question[][];
+
+    if (hasCategories) {
+      cats = uniqueCategories;
+      columns = cats.length;
+      questionsByCategory = cats.map((cat) =>
+        questions.filter((q) => q.category === cat)
+      );
+      rows = Math.max(...questionsByCategory.map((arr) => arr.length), 1);
+    } else {
+      const totalQuestions = questions.length;
+      const targetRows = [5, 4, 3];
+
+      rows = 1;
+      for (const r of targetRows) {
+        if (totalQuestions % r === 0) {
+          rows = r;
+          break;
+        }
+      }
+      if (rows === 1) {
+        rows = targetRows[targetRows.length - 1];
+      }
+
+      columns = Math.ceil(totalQuestions / rows);
+      cats = Array.from({ length: columns }, (_, i) => `Category ${i + 1}`);
+
+      questionsByCategory = [];
+      for (let col = 0; col < columns; col++) {
+        const start = col * rows;
+        const end = Math.min(start + rows, totalQuestions);
+        const colQuestions = questions.slice(start, end);
+        while (colQuestions.length < rows) {
+          colQuestions.push({
+            id: `blank-${colQuestions.length}-${col}`,
+            questionText: "",
+            answerText: "",
+            referenceText: "",
+            revealed: false,
+          });
+        }
+        questionsByCategory.push(colQuestions);
+      }
+    }
+
+    const normalized: Question[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        normalized.push(questionsByCategory[col][row]);
+      }
+    }
+
+    return {
+      numColumns: columns,
+      numRows: rows,
+      computedCategories: cats,
+      normalizedQuestions: normalized,
+    };
+  }, [questions]);
+
+  useEffect(() => {
+    setEditableCategories(computedCategories);
+  }, [computedCategories]);
 
   useEffect(() => {
     if (triggerAnimation) {
@@ -44,29 +132,6 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
       return () => clearTimeout(timeout);
     }
   }, [triggerAnimation]);
-
-  useEffect(() => {
-    if (questions.length > 0 && questions.every((q) => q.category)) {
-      const newCategories = Array.from(
-        new Set(questions.map((q) => q.category).filter((c): c is string => !!c))
-      );
-      if (newCategories.length === 6) {
-        setCategories(newCategories);
-      }
-    }
-  }, [questions]);
-
-  const normalizedQuestions = Array.from({ length: 30 }, (_, index) => {
-    return (
-      questions[index] || {
-        id: `blank-${index}`,
-        questionText: "",
-        answerText: "",
-        referenceText: "",
-        revealed: false,
-      }
-    );
-  });
 
   /**
    * Handles the button click event for a specific question.
@@ -82,17 +147,17 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
         newSet.add(id);
         return newSet;
       });
-      setRecentlyClickedIndex(index); // Update the recently clicked index
+      setRecentlyClickedIndex(index);
       const pointValue =
         normalizedQuestions[index]?.pointValue ||
-        Math.floor(index / 6 + 1) * 100;
-      setTargetScore(pointValue); // Set the target score in context
+        Math.floor(index / numColumns + 1) * 100;
+      setTargetScore(pointValue);
       navigate(`/question/${id}`);
     }
   };
 
   const handleCategoryChange = (index: number, newValue: string) => {
-    setCategories((prev) => {
+    setEditableCategories((prev) => {
       const updated = [...prev];
       updated[index] = newValue;
       return updated;
@@ -106,8 +171,16 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
 
   return (
     <div className={`board-container`}>
-      <div className={`board`}>
-        {categories.map((category, index) => (
+      <div
+        className={`board`}
+        style={{
+          "--num-columns": numColumns,
+          "--num-rows": numRows,
+          gridTemplateColumns: `repeat(${numColumns}, 1fr)`,
+          gridTemplateRows: `3rem repeat(${numRows}, 1fr)`,
+        } as React.CSSProperties}
+      >
+        {editableCategories.map((category, index) => (
           <div key={index} className="category">
             {editingIndex === index ? (
               <input
@@ -129,7 +202,7 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
         ))}
         {normalizedQuestions.map((question, index) => {
           const pointValue =
-            question.pointValue || Math.floor(index / 6 + 1) * 100;
+            question.pointValue || Math.floor(index / numColumns + 1) * 100;
           const isClicked = clickedCells.has(question.id);
           const isRecentlyClicked = recentlyClickedIndex === index;
 
@@ -144,7 +217,7 @@ const Board: React.FC<{ questions: Question[]; triggerAnimation: boolean }> = ({
               style={{
                 animationDelay: `${index * 0.02}s`,
                 zIndex: 30 - index,
-              }} // Stagger animation
+              }}
             >
               {question.id.startsWith("blank") ? "" : pointValue}
             </button>
