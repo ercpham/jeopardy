@@ -3,10 +3,12 @@
   height: 20vh;
   z-index: 1000;
   overflow-x: auto;
+  overflow-y: hidden;
   box-sizing: border-box;
   min-height: 8rem; /* Set a minimum height */
   scrollbar-width: thin;
   scrollbar-color: var(--button-bg) transparent;
+  padding-top: 12px;
 }
 
 .score-container-inner {
@@ -17,26 +19,6 @@
   box-sizing: border-box;
   padding: 0 calc((80vw - min(80vw, 100%)) / 2);
   min-width: min-content;
-}
-
-/* Ensure items don't shrink and maintain their width */
-.wrapper {
-  display: block;
-  box-sizing: border-box;
-  margin: 0;
-  flex: 0 0 auto;
-  width: 18rem;
-  height: 100%;
-  padding: 1rem 1rem 0rem 1rem;
-}
-
-.add-team-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  flex: 0 0 auto;
-  width: 6rem;
 }
 
 .score-container.player {
@@ -65,16 +47,6 @@
   width: 100%;
 }
 
-.wrapper {
-  display: block;
-  box-sizing: border-box;
-  margin: 0;
-  flex: 0 0 auto;
-  width: 18rem;
-  height: 100%;
-  padding: 1rem 1rem 0rem 1rem;
-}
-
 .add-team-wrapper {
   display: flex;
   align-items: center;
@@ -82,13 +54,7 @@
   padding: 1rem;
   flex: 0 0 auto;
   width: 6rem;
-}
-
-.add-team-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
+  height: 100%;
 }
 
 .add-team-button {
