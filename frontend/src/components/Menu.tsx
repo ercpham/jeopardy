@@ -13,9 +13,9 @@ interface MenuProps {
   setQuestions: (questions: {
     id: string;
     revealed: boolean;
-    questionText?: string;
-    answerText?: string;
-    referenceText?: string;
+    questionText: string;
+    answerText: string;
+    referenceText: string;
     category?: string;
     pointValue?: number;
   }[]) => void;
@@ -63,14 +63,17 @@ const Menu: React.FC<MenuProps> = ({
         const question: {
           id: string;
           revealed: boolean;
-          questionText?: string;
-          answerText?: string;
-          referenceText?: string;
+          questionText: string;
+          answerText: string;
+          referenceText: string;
           category?: string;
           pointValue?: number;
         } = {
           id: `${index + 1}`,
           revealed: false,
+          questionText: "",
+          answerText: "",
+          referenceText: "",
         };
 
         headers.forEach((header, i) => {
@@ -98,10 +101,14 @@ const Menu: React.FC<MenuProps> = ({
 
       if (hasCategory && hasPointValue) {
         parsedQuestions.sort((a, b) => {
-          if (a.pointValue !== b.pointValue) {
-            return a.pointValue - b.pointValue;
+          const aPoint = a.pointValue || 0;
+          const bPoint = b.pointValue || 0;
+          if (aPoint !== bPoint) {
+            return aPoint - bPoint;
           }
-          return a.category.localeCompare(b.category);
+          const aCategory = a.category || "";
+          const bCategory = b.category || "";
+          return aCategory.localeCompare(bCategory);
         });
       }
 
