@@ -156,9 +156,23 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
            case "TeamAdded":
             setTeams((prev) => [...prev, msg.team]);
             break;
-          case "TeamRemoved":
-            setTeams((prev) => prev.filter((_, i) => i !== msg.team_index));
-            break;
+case "TeamRemoved":
+             setTeams((prev) => {
+               const newTeams = prev.filter((_, i) => i !== msg.team_index);
+               return newTeams;
+             });
+             // Adjust selectedTeam if it's now out of bounds
+             setSelectedTeam((currentSelected) => {
+               if (currentSelected === msg.team_index) {
+                 // If we removed the currently selected team, select the previous one if available
+                 return Math.max(0, msg.team_index - 1);
+               } else if (currentSelected > msg.team_index) {
+                 // If we removed a team before the selected one, decrement the selected index
+                 return currentSelected - 1;
+               }
+               return currentSelected;
+             });
+             break;
           case "SessionClosed":
             setSessionId(null);
             setTeams(defaultTeams);
@@ -338,6 +352,17 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   const removeTeam = (teamIndex: number) => {
     if (!sessionId) {
       setTeams((prev) => prev.filter((_, i) => i !== teamIndex));
+      // Adjust selectedTeam if it's now out of bounds
+      setSelectedTeam((currentSelected) => {
+        if (currentSelected === teamIndex) {
+          // If we removed the currently selected team, select the previous one if available
+          return Math.max(0, teamIndex - 1);
+        } else if (currentSelected > teamIndex) {
+          // If we removed a team before the selected one, decrement the selected index
+          return currentSelected - 1;
+        }
+        return currentSelected;
+      });
       return;
     }
 
