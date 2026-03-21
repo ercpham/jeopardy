@@ -33,7 +33,7 @@ const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
           ))}
         </select>
       </div>
-      <button className={`buzzer-button ${buzzLock ? "lock_owned" : ""} ${teams[selectedTeam].buzz_lock_owned ? "lock_win" : ""}`} onClick={handleBuzz}>
+      <button className={`buzzer-button ${buzzLock ? "lock_owned" : ""} ${teams[selectedTeam]?.buzz_lock_owned ? "lock_win" : ""}`} onClick={handleBuzz}>
       </button>
     </div>
   );

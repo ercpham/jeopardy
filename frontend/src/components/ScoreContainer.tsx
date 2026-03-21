@@ -43,13 +43,15 @@ const ScoreContainer: React.FC<ScoreContainerProps> = ({
     let buzzingTeamIndex = -1;
     
     for (let i = 0; i < teams.length; i++) {
-      const prevTeam = prevTeamsRef.current[i];
       const currTeam = teams[i];
-      
-      if (currTeam && prevTeam && 
-          !prevTeam.buzz_lock_owned && currTeam.buzz_lock_owned) {
-        buzzingTeamIndex = i;
-        break;
+      // Only compare if we have previous data for this index
+      if (i < prevTeamsRef.current.length) {
+        const prevTeam = prevTeamsRef.current[i];
+        if (currTeam && prevTeam && 
+            !prevTeam.buzz_lock_owned && currTeam.buzz_lock_owned) {
+          buzzingTeamIndex = i;
+          break;
+        }
       }
     }
     
@@ -88,18 +90,24 @@ const ScoreContainer: React.FC<ScoreContainerProps> = ({
       onWheel={handleWheel}
     >
       <div className="score-container-inner">
-        {player ? (
-          <div key={selectedTeam} className="wrapper">
-            <Score
-              key={selectedTeam} // Use selectedTeam as the key to force rerender
-              team={teams[selectedTeam]}
-              controls={!player}
-              modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, selectedTeam)}
-              managingTeams={managingTeams}
-              removeTeam={() => removeTeam(selectedTeam)}
-            />
-          </div>
-        ) : (
+{player ? (
+           teams[selectedTeam] ? (
+             <div key={selectedTeam} className="wrapper">
+               <Score
+                 key={selectedTeam} // Use selectedTeam as the key to force rerender
+                 team={teams[selectedTeam]}
+                 controls={!player}
+                 modifyTeam={(updatedTeam) => modifyTeam(updatedTeam, selectedTeam)}
+                 managingTeams={managingTeams}
+                 removeTeam={() => removeTeam(selectedTeam)}
+               />
+             </div>
+           ) : (
+             <div className="wrapper">
+               <div className="loading-spinner"></div>
+             </div>
+           )
+         ) : (
           <>
             {teams.map((team, index) => (
               <div key={index} className="wrapper">
