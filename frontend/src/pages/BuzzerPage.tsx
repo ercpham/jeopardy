@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import "../styles/BuzzerPage.css";
 import { Team, useTeam } from "../context/TeamContext";
 
@@ -9,6 +9,35 @@ interface BuzzerPageProps {
 
 const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
   const {selectedTeam, setSelectedTeam, buzzLock } = useTeam();
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
+  useEffect(() => {
+    const requestWakeLock = async () => {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLockRef.current = await navigator.wakeLock.request("screen");
+        }
+      } catch {
+        // Wake lock request can fail (e.g. low battery), silently ignore
+      }
+    };
+
+    requestWakeLock();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      wakeLockRef.current?.release();
+      wakeLockRef.current = null;
+    };
+  }, []);
 
   const handleBuzz = () => {
     buzzIn(selectedTeam);

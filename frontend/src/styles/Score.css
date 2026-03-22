@@ -4,7 +4,7 @@
   flex-direction: column;
   justify-content: space-between;
   background-color: var(--card-bg);
-  border-radius: 5px;
+  border-radius: 8px;
   transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
   height: 100%;
   flex: 1;
@@ -20,9 +20,11 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
+  gap: 0.5rem;
   overflow: hidden;
   box-sizing: border-box;
-  border-radius: 5px;
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
 .scorecard.active {
@@ -30,9 +32,14 @@
   box-shadow: #005ec248 0px -2px 4px 4px;
 }
 
+.scorecard.buzzed {
+  opacity: 0.7;
+  filter: grayscale(0.5);
+}
+
 .scorecard input {
-  border: none;
-  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   color: var(--text-color);
   background-color: var(--button-bg);
   width: 100%;
@@ -43,10 +50,11 @@
   -webkit-appearance: none;
   overflow: hidden;
   box-sizing: border-box;
+  padding: 0.3rem;
 }
 
 .team-name-input {
-  flex: 0.5;
+  flex: 1;
 }
 
 .scorecard h1 {
@@ -73,45 +81,55 @@
 .remove-team-button {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  box-shadow: none;
   cursor: pointer;
-  padding: 0;
-  border-radius: 3px;
-  color: var(--text-color);
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  width: 1.5rem;
-  height: 1.5rem;
+  padding: 0.3rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: color 0.2s, background-color 0.2s;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
   margin-left: 0.5rem;
   flex-shrink: 0;
 }
 
 .remove-team-button:hover {
-  opacity: 1;
-  background-color: rgba(255, 77, 77, 0.2);
+  color: var(--text-color);
+  background-color: var(--button-hover);
 }
 
 
 .scorecard button:not(.remove-team-button) {
   border: none;
-  font-size: calc(1rem + 0.5vw);
-  height: 2rem;
-  width: 4rem;
+  font-size: var(--fs-sm);
+  height: 2.5rem;
+  width: 3rem;
+  border-radius: 8px;
   cursor: pointer;
+  box-shadow: none;
 }
 
-.scorecard button:first-of-type {
-  background-color: rgb(99, 216, 105);
-  color: white;
+.scorecard button:first-of-type:not(.remove-team-button) {
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
 }
 
-.scorecard button:last-of-type {
-  background-color: #ff4d4d;
-  color: white;
+.scorecard button:first-of-type:not(.remove-team-button):hover {
+  background-color: var(--button-hover);
+}
+
+.scorecard button:last-of-type:not(.remove-team-button) {
+  background-color: var(--action-color);
+  color: var(--action-text);
+  border: none;
+}
+
+.scorecard button:last-of-type:not(.remove-team-button):hover {
+  background-color: var(--action-hover);
 }
 
 .scorecard.no-controls {

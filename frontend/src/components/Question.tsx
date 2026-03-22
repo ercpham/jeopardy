@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../context/SettingsContext";
+import { useTeam } from "../context/TeamContext";
+import { Timer } from "lucide-react";
 import "../styles/Question.css";
 
 const TIMER_DURATION = 30;
@@ -24,9 +26,16 @@ const Question: React.FC<{
 }) => {
   const navigate = useNavigate();
   const { timerEnabled } = useSettings();
+  const { resetBuzzedTeams, releaseBuzzLock, teams } = useTeam();
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [timerExpired, setTimerExpired] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const teamTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [teamTimeLeft, setTeamTimeLeft] = useState<number | null>(null);
+  const teamsRef = useRef(teams);
+  teamsRef.current = teams;
+  const timerExpiredRef = useRef(timerExpired);
+  timerExpiredRef.current = timerExpired;
 
   // Keep a stable ref to onTimerExpired so it never triggers a timer restart
   const onTimerExpiredRef = useRef(onTimerExpired);
@@ -42,24 +51,20 @@ const Question: React.FC<{
     }
   }, [timerEnabled, revealed]);
 
-  // Tick the timer — pauses when buzzLock is true
+  // Tick the timer — does NOT pause when buzzLock is true
   useEffect(() => {
     if (!timerEnabled || revealed || timerExpired) return;
-    if (buzzLock) {
-      // Paused — clear any running interval and do nothing
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
 
     intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           if (intervalRef.current) clearInterval(intervalRef.current);
           setTimerExpired(true);
-          onTimerExpiredRef.current?.();
+          // Don't lock buzzers if a team is currently buzzing — let their 15s timer finish
+          const anyTeamOwned = teamsRef.current.some((t) => t.buzz_lock_owned);
+          if (!anyTeamOwned) {
+            onTimerExpiredRef.current?.();
+          }
           return 0;
         }
         return prev - 1;
@@ -72,10 +77,79 @@ const Question: React.FC<{
         intervalRef.current = null;
       }
     };
-  }, [timerEnabled, revealed, timerExpired, buzzLock]);
+  }, [timerEnabled, revealed, timerExpired]);
+
+  // 15-second timer for buzzing team (only when on question page, timer enabled, and question not revealed)
+  useEffect(() => {
+    if (!timerEnabled || revealed || !buzzLock) {
+      // Clear team timer if conditions not met
+      if (teamTimerRef.current) {
+        clearInterval(teamTimerRef.current);
+        teamTimerRef.current = null;
+        setTeamTimeLeft(null);
+      }
+      // If the 30s timer already expired, lock buzzers to prevent new buzzes
+      if (timerEnabled && !revealed && timerExpiredRef.current) {
+        onTimerExpiredRef.current?.();
+      }
+      return;
+    }
+
+    // Start 15-second timer for buzzing team
+    setTeamTimeLeft(15);
+    teamTimerRef.current = setInterval(() => {
+      setTeamTimeLeft((prev) => {
+        if (prev === null || prev <= 1) {
+          if (teamTimerRef.current) {
+            clearInterval(teamTimerRef.current);
+            teamTimerRef.current = null;
+          }
+          // Auto-release buzz lock after 15 seconds
+          releaseBuzzLock();
+          // If the 30s timer already expired, also lock buzzers now
+          // (the cleanup in the buzzLock effect also handles this)
+          if (timerExpiredRef.current) {
+            onTimerExpiredRef.current?.();
+          }
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (teamTimerRef.current) {
+        clearInterval(teamTimerRef.current);
+        teamTimerRef.current = null;
+        setTeamTimeLeft(null);
+      }
+    };
+  }, [timerEnabled, revealed, buzzLock, releaseBuzzLock]);
 
   const handleGoHome = () => {
+    // Clear team timer
+    if (teamTimerRef.current) {
+      clearInterval(teamTimerRef.current);
+      teamTimerRef.current = null;
+    }
+    // Reset buzzed teams when leaving question
+    resetBuzzedTeams();
+    // Release buzz lock when leaving question
+    releaseBuzzLock();
     navigate("/");
+  };
+
+  const handleRevealAnswer = () => {
+    // Clear team timer
+    if (teamTimerRef.current) {
+      clearInterval(teamTimerRef.current);
+      teamTimerRef.current = null;
+    }
+    onRevealAnswer();
+    // Reset buzzed teams when answer is revealed
+    resetBuzzedTeams();
+    // Release buzz lock when answer is revealed
+    releaseBuzzLock();
   };
 
   const formatTime = (seconds: number) => {
@@ -90,6 +164,9 @@ const Question: React.FC<{
     if (timeLeft <= 10) return "timer-warning";
     return "";
   };
+
+  // Find which team is currently buzzing
+  const buzzingTeam = teams.find((team) => team.buzz_lock_owned);
 
   return (
     <div className="question-wrapper">
@@ -116,12 +193,14 @@ const Question: React.FC<{
         </button>
         {timerEnabled && !revealed && (
           <div className={`timer-display ${getTimerClass()}`}>
-            <span className="timer-icon">⏱</span>
+            <Timer size={18} />
             <span className="timer-text">
               {timerExpired ? "Time's up!" : formatTime(timeLeft)}
             </span>
-            {buzzLock && !timerExpired && (
-              <span className="timer-paused">Paused</span>
+            {buzzLock && buzzingTeam && teamTimeLeft !== null && (
+              <span className="timer-paused">
+                {buzzingTeam.team_name}: {teamTimeLeft}s to answer
+              </span>
             )}
           </div>
         )}
@@ -133,7 +212,7 @@ const Question: React.FC<{
               <h4 className="reference fade-in">{referenceText}</h4>
             </>
           ) : (
-            <button className="reveal-button" onClick={onRevealAnswer}>
+            <button className="reveal-button" onClick={handleRevealAnswer}>
               Reveal Answer
             </button>
           )}

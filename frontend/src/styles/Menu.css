@@ -1,88 +1,169 @@
-.menu {
+.menu-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 18rem;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  animation: menuFadeIn 0.2s ease;
+}
+
+.menu {
+  width: 22rem;
   height: 100%;
   background-color: var(--menu-bg);
-  box-shadow: 2px 0 5px var(--shadow-color);
-  transition: transform 0.3s, background-color 0.3s;
-  z-index: 999;
-  padding: 20px;
+  box-shadow: 2px 0 12px var(--shadow-color);
   box-sizing: border-box;
-  transform: translateX(-100%);
   display: flex;
   flex-direction: column;
   color: var(--text-color);
+  animation: menuSlideIn 0.25s ease;
 }
 
-.menu.open {
-  transform: translateX(0);
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.5rem;
 }
 
-.menu label {
-  cursor: pointer;
+.menu-header svg {
+  color: var(--text-color);
+}
+
+.menu-close {
+  background: none;
+  box-shadow: none;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.menu-close:hover {
+  background: none;
+  color: var(--text-color);
+  background-color: var(--button-hover);
+  transform: none;
 }
 
 .menu ul {
   display: flex;
   flex-direction: column;
   list-style: none;
-  padding: 0;
+  padding: 0 0.75rem;
   margin: 0;
   height: 100%;
 }
 
-.menu li {
-  color: var(--text-color);
-  font-weight: bold;
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes menuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.menu label {
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.2s ease;
-  margin: 1rem;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  margin: 0.15rem 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
 }
 
 .menu li:hover {
   color: #005ec2;
-  transform: scale(1.02);
+  background-color: var(--button-hover);
+  transform: translateX(2px);
 }
 
 .menu li:active {
   color: #003c7c;
-  transform: scale(1);
+  transform: translateX(0);
+}
+
+.menu li svg {
+  flex-shrink: 0;
+}
+
+.menu label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .copy-message {
   margin: 1rem;
-  width: 100%
+  width: 100%;
 }
 
 .menu li.session-join-wrapper {
+  display: block;
   margin: 0;
   margin-top: auto;
+  padding: 0.75rem;
+}
+
+.menu li.session-join-wrapper:hover {
+  background-color: transparent;
+  transform: none;
 }
 
 .session-join-container {
   background-color: var(--session-bg);
-  padding: 10px;
-  box-shadow: 0 -1px 5px var(--shadow-color);
+  padding: 0;
+  box-shadow: none;
   box-sizing: border-box;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 .session-input-wrapper {
   display: flex;
   align-items: center;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   cursor: default;
 }
 
 .session-input-wrapper input {
   flex: 1;
-  padding: 10px 0px;
+  padding: 0.6rem 0.75rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-weight: bold;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: var(--fs-xs);
   text-align: center;
   width: 100%;
   background-color: var(--button-bg);
@@ -90,13 +171,31 @@
 }
 
 .session-input-wrapper button {
-  font-size: calc(0.8rem + 0.5vw);
-  padding: .8rem;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 0.6rem 0.75rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   background-color: var(--button-bg);
   color: var(--text-color);
+  width: 100%;
+}
+
+.session-id {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.session-id:hover {
+  background-color: var(--button-hover);
 }
 
 .copy-message {

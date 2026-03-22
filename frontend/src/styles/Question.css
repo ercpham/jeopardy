@@ -32,11 +32,11 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.4rem 0.8rem;
-  font-size: calc(0.8rem + 0.3vw);
+  font-size: var(--fs-xs);
   background-color: var(--button-bg);
   color: var(--text-color);
   border-radius: 8px;
-  box-shadow: var(--shadow-color) 1px 1px 3px;
+  box-shadow: var(--shadow-color) 2px 2px 2px;
   transition: background-color 0.2s, transform 0.2s;
 }
 
@@ -59,9 +59,15 @@
 
 .reveal-button {
   margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  font-size: calc(1.0rem + 0.5vw);
-  box-shadow: 0 0px 10px var(--shadow-color);
+  padding: 0.6rem 1.5rem;
+  font-size: var(--fs-sm);
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  border-radius: 8px;
+}
+
+.reveal-button:hover {
+  background-color: var(--button-hover);
 }
 
 .timer-display {
@@ -73,17 +79,22 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1.2rem;
-  background-color: var(--timer-bg, #005ec2);
-  color: #ffffff;
-  border-radius: 20px;
-  font-size: calc(1rem + 0.3vw);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: var(--fs-sm);
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-color) 2px 2px 2px;
   transition: background-color 0.3s;
 }
 
 .timer-display .timer-icon {
   font-size: 1.1em;
+}
+
+.timer-display svg {
+  flex-shrink: 0;
 }
 
 .timer-display .timer-paused {
@@ -99,11 +110,15 @@
 }
 
 .timer-display.timer-warning {
-  background-color: #e6a817;
+  background-color: #eab308;
+  color: #ffffff;
+  border-color: #eab308;
 }
 
 .timer-display.timer-critical {
-  background-color: #d32f2f;
+  background-color: var(--action-color);
+  color: var(--action-text);
+  border-color: var(--action-color);
 }
 
 @keyframes pulse {

@@ -8,22 +8,13 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex as AsyncMutex, RwLock};
 
-/// Represents a question in the Bible Challenge.
-#[derive(Serialize, Deserialize)]
-pub struct Question {
-    pub id: String,
-    pub question_text: String,
-    pub answer_text: String,
-    pub reference_text: String,
-    pub revealed: bool,
-}
-
 /// Represents a team in the Bible Challenge.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Team {
     pub team_name: String,
     pub score: i32,
     pub buzz_lock_owned: bool,
+    pub has_buzzed: bool,
 }
 
 /// Represents a session in the Bible Challenge.
@@ -33,6 +24,7 @@ pub struct Session {
     pub buzz_lock: bool,
     pub dark_mode: bool,
     pub timer_enabled: bool,
+    pub current_page: String,
     pub created_at: DateTime<Utc>,
     pub last_modified: DateTime<Utc>,
 }
@@ -50,6 +42,8 @@ pub enum WsClientMsg {
     UpdateTimerEnabled { enabled: bool },
     AddTeam,
     RemoveTeam { team_index: usize },
+    ResetHasBuzzed,
+    SetPage { page: String },
 }
 
 /// Messages sent from server to client over WebSocket.
@@ -66,6 +60,8 @@ pub enum WsServerMsg {
     TimerEnabledUpdate { enabled: bool },
     TeamAdded { team: Team },
     TeamRemoved { team_index: usize },
+    HasBuzzedReset,
+    PageUpdate { page: String },
     SessionClosed,
 }
 

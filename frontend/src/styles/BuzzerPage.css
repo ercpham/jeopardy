@@ -21,45 +21,49 @@
 }
 
 .team-selector select {
-  padding: .5rem 1rem;
-  border: none;
-  box-shadow: var(--shadow-color) 2px 2px 2px;
-  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  border-radius: 8px;
   cursor: pointer;
   background-color: var(--button-bg);
   color: var(--text-color);
-  font-size: calc(1.50rem + 0.1vw);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
 }
 
 .buzzer-button {
   width: 18rem;
   height: 18rem;
   border-radius: 50%;
-  background-color: #ff4d4d;
+  background-color: var(--action-color);
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
   animation: pulse-shadow 1.5s infinite ease-in-out;
 }
 
 .buzzer-button.lock_owned {
   animation: none;
-  box-shadow: 0 0px 12px 8px #c2000048;
+  box-shadow: 0 0px 12px 8px rgba(0, 0, 0, 0.15);
 }
 
 .buzzer-button.lock_win {
-  box-shadow: 0 0px 12px 8px #005ec248;
+  box-shadow: 0 0px 12px 8px rgba(0, 0, 0, 0.15);
 }
 
 .buzzer-button:hover {
   transform: scale(1.1);
-  background-color: #ff4d4d;
+  background-color: var(--action-hover);
 }
 
 .buzzer-button:active {
   transform: scale(0.95);
-  background-color: #ff4d4d;
+  background-color: var(--action-hover);
 }
 
 .buzzer-button.lock_owned:hover {

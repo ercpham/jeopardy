@@ -19,6 +19,7 @@ export interface Team {
   team_name: string;
   score: number;
   buzz_lock_owned: boolean;
+  has_buzzed: boolean; // Track if team has buzzed for current question
 }
 
 interface TeamContextProps {
@@ -34,12 +35,13 @@ interface TeamContextProps {
   loading: boolean;
   addTeam: () => void;
   removeTeam: (index: number) => void;
+  resetBuzzedTeams: () => void; // Reset has_buzzed when new question starts
 }
 
 const defaultTeams: Team[] = [
-  { team_name: "Team 1", score: 0, buzz_lock_owned: false },
-  { team_name: "Team 2", score: 0, buzz_lock_owned: false },
-  { team_name: "Team 3", score: 0, buzz_lock_owned: false },
+  { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false },
+  { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false },
+  { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false },
 ];
 
 const TeamContext = createContext<TeamContextProps | undefined>(undefined);
@@ -54,8 +56,9 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedTeam, setSelectedTeam] = useState<number>(0);
   const hasPlayedBuzzerRef = useRef(false);
 
-  const { sessionId, setSessionId, wsRef, setOnWsMessage, sessionState } =
-    useSession();
+
+  const { sessionId, setSessionId, wsRef, setOnWsMessage, sessionState } = useSession();
+  const currentPageRef = useRef("home");
 
   // Derive loading: true while waiting for initial session state from WS
   const loading = !!(sessionId && !sessionState);
@@ -68,6 +71,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     buzz_lock: boolean;
     dark_mode: boolean;
     timer_enabled: boolean;
+    current_page?: string;
     created_at: string;
     last_modified: string;
   }) => {
@@ -85,17 +89,41 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
         hasPlayedBuzzerRef.current = false;
       }
     }
-  }, []);
-
-  // Sync initial state from SessionContext when sessionState arrives
-  useEffect(() => {
-    if (sessionState) {
-      applyFullState(sessionState);
-    } else if (!sessionId) {
-      setTeams(defaultTeams);
-      setBuzzLock(false);
+    if (session.current_page) {
+      currentPageRef.current = session.current_page;
     }
-  }, [sessionState, sessionId, applyFullState]);
+}, []);
+
+  const sendWsMessage = useCallback(
+    (msg: object) => {
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg));
+        return true;
+      }
+      return false;
+    },
+    [wsRef]
+  );
+
+  const releaseBuzzLock = useCallback(() => {
+    if (!sessionId) {
+      setBuzzLock(false);
+      setTeams((prev) =>
+        prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false }))
+      );
+      return;
+    }
+
+    if (!sendWsMessage({ type: "ReleaseBuzz" })) {
+      // Fallback to HTTP
+      fetch(`${API_URL}/session/${sessionId}/buzz/release`, {
+        method: "POST",
+      }).catch(() => {});
+    }
+  }, [sessionId, sendWsMessage]);
+
+  
 
   /**
    * Handles individual WebSocket messages from the server.
@@ -112,8 +140,10 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
               prev.map((team, i) => ({
                 ...team,
                 buzz_lock_owned: i === msg.team_index,
+                has_buzzed: i === msg.team_index || team.has_buzzed,
               }))
             );
+            // 15-second timer will be handled by Question component if on question page
             if (!hasPlayedBuzzerRef.current) {
               const buzzerSound = new Audio("/sounds/buzz.mp3");
               buzzerSound.play().catch(() => {});
@@ -124,7 +154,11 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
           case "BuzzReleased":
             setBuzzLock(false);
             setTeams((prev) =>
-              prev.map((team) => ({ ...team, buzz_lock_owned: false }))
+              prev.map((team) => ({
+                ...team,
+                buzz_lock_owned: false,
+                has_buzzed: currentPageRef.current === "home" ? false : team.has_buzzed,
+              }))
             );
             hasPlayedBuzzerRef.current = false;
             break;
@@ -150,7 +184,17 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
            case "BuzzersLocked":
              setBuzzLock(true);
              // No team owns the lock — timer expiry
-             setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false })));
+             setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false })));
+             break;
+
+           case "HasBuzzedReset":
+             setBuzzLock(false);
+             currentPageRef.current = "home";
+             setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false })));
+             break;
+
+           case "PageUpdate":
+             currentPageRef.current = msg.page;
              break;
 
            case "TeamAdded":
@@ -185,7 +229,7 @@ case "TeamRemoved":
     },
     [setSessionId]
   );
-
+  
   // Register WebSocket message handler when session is active
   useEffect(() => {
     if (sessionId) {
@@ -201,32 +245,39 @@ case "TeamRemoved":
     };
   }, [sessionId, handleWsMessage, setOnWsMessage]);
 
+  // Sync initial state from SessionContext when sessionState arrives
+  useEffect(() => {
+    if (sessionState) {
+      applyFullState(sessionState);
+    } else if (!sessionId) {
+      setTeams(defaultTeams);
+      setBuzzLock(false);
+    }
+  }, [sessionState, sessionId, applyFullState]);
+
   /**
-   * Sends a WebSocket message if connected, otherwise falls back to HTTP.
+   * Reset has_buzzed for all teams (called when new question starts or going home)
    */
-  const sendWsMessage = useCallback(
-    (msg: object) => {
-      const ws = wsRef.current;
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(msg));
-        return true;
-      }
-      return false;
-    },
-    [wsRef]
-  );
+  const resetBuzzedTeams = () => {
+    setTeams((prev) => prev.map((team) => ({ ...team, has_buzzed: false })));
+  };
 
   /**
    * Buzz in for a team. Sends via WebSocket, falls back to HTTP if WS unavailable.
    */
   const buzzIn = (teamIndex: number) => {
+    // Check if team has already buzzed for this question
+    if (teams[teamIndex]?.has_buzzed) {
+      return;
+    }
+
     if (!sessionId && !buzzLock) {
       setBuzzLock(true);
       setTeams((prev) =>
         prev.map((team, index) =>
           index === teamIndex
-            ? { ...team, buzz_lock_owned: true }
-            : { ...team, buzz_lock_owned: false }
+            ? { ...team, buzz_lock_owned: true, has_buzzed: true }
+            : { ...team, buzz_lock_owned: false, has_buzzed: team.has_buzzed }
         )
       );
       return;
@@ -238,6 +289,15 @@ case "TeamRemoved":
     if (
       sendWsMessage({ type: "BuzzIn", team_index: teamIndex })
     ) {
+      // Optimistic update - server will confirm
+      setBuzzLock(true);
+      setTeams((prev) =>
+        prev.map((team, index) =>
+          index === teamIndex
+            ? { ...team, buzz_lock_owned: true, has_buzzed: true }
+            : { ...team, buzz_lock_owned: false, has_buzzed: team.has_buzzed }
+        )
+      );
       return;
     }
 
@@ -255,33 +315,13 @@ case "TeamRemoved":
           setTeams((prev) =>
             prev.map((team, index) =>
               index === teamIndex
-                ? { ...team, buzz_lock_owned: true }
-                : { ...team, buzz_lock_owned: false }
+                ? { ...team, buzz_lock_owned: true, has_buzzed: true }
+                : { ...team, buzz_lock_owned: false, has_buzzed: team.has_buzzed }
             )
           );
         }
       })
       .catch(() => {});
-  };
-
-  /**
-   * Release the buzz lock. Sends via WebSocket, falls back to HTTP.
-   */
-  const releaseBuzzLock = () => {
-    if (!sessionId) {
-      setBuzzLock(false);
-      setTeams((prev) =>
-        prev.map((team) => ({ ...team, buzz_lock_owned: false }))
-      );
-      return;
-    }
-
-    if (!sendWsMessage({ type: "ReleaseBuzz" })) {
-      // Fallback to HTTP
-      fetch(`${API_URL}/session/${sessionId}/buzz/release`, {
-        method: "POST",
-      }).catch(() => {});
-    }
   };
 
    /**
@@ -294,9 +334,6 @@ case "TeamRemoved":
        // Server will broadcast BuzzersLocked back to all clients including us
        return;
      }
-     // Solo mode: update local state directly
-     setBuzzLock(true);
-     setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false })));
    };
 
 /**
@@ -338,6 +375,7 @@ case "TeamRemoved":
         team_name: `Team ${newTeamIndex + 1}`,
         score: 0,
         buzz_lock_owned: false,
+        has_buzzed: false,
       };
       setTeams((prev) => [...prev, newTeam]);
       return;
@@ -384,6 +422,7 @@ case "TeamRemoved":
         setSelectedTeam,
         addTeam,
         removeTeam,
+        resetBuzzedTeams,
       }}
     >
       {children}

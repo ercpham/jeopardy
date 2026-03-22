@@ -141,13 +141,19 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
     match msg {
         WsClientMsg::BuzzIn { team_index } => {
             if !session.buzz_lock {
+                let is_home = session.current_page == "home";
                 if let Some(team) = session.teams.get_mut(team_index) {
-                    team.buzz_lock_owned = true;
-                    session.buzz_lock = true;
-                    session.last_modified = Utc::now();
-                    drop(session);
-                    drop(sessions);
-                    broadcast(state, session_id, &WsServerMsg::BuzzLocked { team_index }).await;
+                    if !team.has_buzzed {
+                        team.buzz_lock_owned = true;
+                        if !is_home {
+                            team.has_buzzed = true;
+                        }
+                        session.buzz_lock = true;
+                        session.last_modified = Utc::now();
+                        drop(session);
+                        drop(sessions);
+                        broadcast(state, session_id, &WsServerMsg::BuzzLocked { team_index }).await;
+                    }
                 }
             }
         }
@@ -193,22 +199,25 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
              }
          }
          WsClientMsg::LockBuzzers => {
-             if !session.buzz_lock {
-                 session.buzz_lock = true;
-                 session.last_modified = Utc::now();
-                 drop(session);
-                 drop(sessions);
-                 broadcast(state, session_id, &WsServerMsg::BuzzersLocked).await;
-             }
-         }
+            session.buzz_lock = true;
+            for team in &mut session.teams {
+                team.buzz_lock_owned = false;
+                // Reset has_buzzed when timer expires
+                team.has_buzzed = false;
+            }
+            session.last_modified = Utc::now();
+            drop(session);
+            drop(sessions);
+            broadcast(state, session_id, &WsServerMsg::BuzzersLocked).await;
+        }
          WsClientMsg::UpdateDarkMode { enabled } => {
              session.dark_mode = enabled;
-             session.last_modified = Utc::now();
-             drop(session);
-             drop(sessions);
-             broadcast(state, session_id, &WsServerMsg::DarkModeUpdate { enabled }).await;
-         }
-WsClientMsg::UpdateTimerEnabled { enabled } => {
+session.last_modified = Utc::now();
+              drop(session);
+              drop(sessions);
+              broadcast(state, session_id, &WsServerMsg::DarkModeUpdate { enabled }).await;
+          }
+          WsClientMsg::UpdateTimerEnabled { enabled } => {
               session.timer_enabled = enabled;
               session.last_modified = Utc::now();
               drop(session);
@@ -221,6 +230,7 @@ WsClientMsg::UpdateTimerEnabled { enabled } => {
                   team_name: format!("Team {}", new_team_index + 1),
                   score: 0,
                   buzz_lock_owned: false,
+                  has_buzzed: false,
               };
               session.teams.push(new_team.clone());
               session.last_modified = Utc::now();
@@ -235,6 +245,36 @@ WsClientMsg::UpdateTimerEnabled { enabled } => {
                   drop(session);
                   drop(sessions);
                   broadcast(state, session_id, &WsServerMsg::TeamRemoved { team_index }).await;
+              }
+          }
+          WsClientMsg::ResetHasBuzzed => {
+              session.buzz_lock = false;
+              for team in &mut session.teams {
+                  team.buzz_lock_owned = false;
+                  team.has_buzzed = false;
+              }
+              session.last_modified = Utc::now();
+              drop(session);
+              drop(sessions);
+              broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
+          }
+          WsClientMsg::SetPage { page } => {
+              session.current_page = page;
+              session.last_modified = Utc::now();
+              if session.current_page == "home" {
+                  session.buzz_lock = false;
+                  for team in &mut session.teams {
+                      team.buzz_lock_owned = false;
+                      team.has_buzzed = false;
+                  }
+                  drop(session);
+                  drop(sessions);
+                  broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
+              } else {
+                  let page = session.current_page.clone();
+                  drop(session);
+                  drop(sessions);
+                  broadcast(state, session_id, &WsServerMsg::PageUpdate { page }).await;
               }
           }
      }
@@ -256,8 +296,15 @@ async fn apply_buzz_lock(
     if session.buzz_lock {
         return None;
     }
+    let is_home = session.current_page == "home";
     let team = session.teams.get_mut(team_index)?;
+    if team.has_buzzed {
+        return None;
+    }
     team.buzz_lock_owned = true;
+    if !is_home {
+        team.has_buzzed = true;
+    }
     session.buzz_lock = true;
     session.last_modified = Utc::now();
     drop(session);
@@ -304,21 +351,25 @@ pub async fn start_session(State(state): State<Arc<AppState>>) -> Json<String> {
         buzz_lock: false,
         dark_mode: false,
         timer_enabled: false,
+        current_page: "home".to_string(),
         teams: vec![
             Team {
                 team_name: "Team 1".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
+                has_buzzed: false,
             },
             Team {
                 team_name: "Team 2".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
+                has_buzzed: false,
             },
             Team {
                 team_name: "Team 3".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
+                has_buzzed: false,
             },
         ],
     };
