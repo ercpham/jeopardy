@@ -8,22 +8,13 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex as AsyncMutex, RwLock};
 
-/// Represents a question in the Bible Challenge.
-#[derive(Serialize, Deserialize)]
-pub struct Question {
-    pub id: String,
-    pub question_text: String,
-    pub answer_text: String,
-    pub reference_text: String,
-    pub revealed: bool,
-}
-
 /// Represents a team in the Bible Challenge.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Team {
     pub team_name: String,
     pub score: i32,
     pub buzz_lock_owned: bool,
+    pub has_buzzed: bool,
 }
 
 /// Represents a session in the Bible Challenge.

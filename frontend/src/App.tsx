@@ -70,9 +70,9 @@ const App: React.FC = () => {
 
   const resetTeams = () => {
     const defaultTeams = [
-      { team_name: "Team 1", score: 0, buzz_lock_owned: false },
-      { team_name: "Team 2", score: 0, buzz_lock_owned: false },
-      { team_name: "Team 3", score: 0, buzz_lock_owned: false },
+      { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false },
+      { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false },
+      { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false },
     ];
     defaultTeams.forEach((team, index) => {
       modifyTeam(team, index);

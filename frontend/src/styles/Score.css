@@ -30,6 +30,11 @@
   box-shadow: #005ec248 0px -2px 4px 4px;
 }
 
+.scorecard.buzzed {
+  opacity: 0.7;
+  filter: grayscale(0.5);
+}
+
 .scorecard input {
   border: none;
   border-radius: 5px;

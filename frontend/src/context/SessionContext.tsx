@@ -11,6 +11,7 @@ interface SessionTeam {
   team_name: string;
   score: number;
   buzz_lock_owned: boolean;
+  has_buzzed: boolean;
 }
 
 interface SessionState {

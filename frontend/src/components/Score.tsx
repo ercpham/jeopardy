@@ -56,7 +56,7 @@ const Score: React.FC<{
   };
 
   return (
-    <div className={`scorecard ${team.buzz_lock_owned ? "active" : ""} ${controls ? "" : "no-controls"}`}>
+    <div className={`scorecard ${team.buzz_lock_owned ? "active" : ""} ${team.has_buzzed ? "buzzed" : ""} ${controls ? "" : "no-controls"}`}>
       <div className="team-name-row">
         {isEditingName ? (
           <input
