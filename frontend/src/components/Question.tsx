@@ -31,6 +31,10 @@ const Question: React.FC<{
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const teamTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [teamTimeLeft, setTeamTimeLeft] = useState<number | null>(null);
+  const teamsRef = useRef(teams);
+  teamsRef.current = teams;
+  const timerExpiredRef = useRef(timerExpired);
+  timerExpiredRef.current = timerExpired;
 
   // Keep a stable ref to onTimerExpired so it never triggers a timer restart
   const onTimerExpiredRef = useRef(onTimerExpired);
@@ -55,7 +59,11 @@ const Question: React.FC<{
         if (prev <= 1) {
           if (intervalRef.current) clearInterval(intervalRef.current);
           setTimerExpired(true);
-          onTimerExpiredRef.current?.();
+          // Don't lock buzzers if a team is currently buzzing — let their 15s timer finish
+          const anyTeamOwned = teamsRef.current.some((t) => t.buzz_lock_owned);
+          if (!anyTeamOwned) {
+            onTimerExpiredRef.current?.();
+          }
           return 0;
         }
         return prev - 1;
@@ -79,6 +87,10 @@ const Question: React.FC<{
         teamTimerRef.current = null;
         setTeamTimeLeft(null);
       }
+      // If the 30s timer already expired, lock buzzers to prevent new buzzes
+      if (timerEnabled && !revealed && timerExpiredRef.current) {
+        onTimerExpiredRef.current?.();
+      }
       return;
     }
 
@@ -93,6 +105,11 @@ const Question: React.FC<{
           }
           // Auto-release buzz lock after 15 seconds
           releaseBuzzLock();
+          // If the 30s timer already expired, also lock buzzers now
+          // (the cleanup in the buzzLock effect also handles this)
+          if (timerExpiredRef.current) {
+            onTimerExpiredRef.current?.();
+          }
           return null;
         }
         return prev - 1;
@@ -179,7 +196,7 @@ const Question: React.FC<{
             <span className="timer-text">
               {timerExpired ? "Time's up!" : formatTime(timeLeft)}
             </span>
-            {buzzLock && !timerExpired && buzzingTeam && teamTimeLeft !== null && (
+            {buzzLock && buzzingTeam && teamTimeLeft !== null && (
               <span className="timer-paused">
                 {buzzingTeam.team_name}: {teamTimeLeft}s to answer
               </span>
