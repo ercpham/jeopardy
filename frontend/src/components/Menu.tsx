@@ -1,10 +1,22 @@
 import React, { useState } from "react";
 import { useSession } from "../context/SessionContext";
+import {
+  Upload,
+  RotateCcw,
+  Eye,
+  Users,
+  Play,
+  LogOut,
+  Copy,
+  BookOpen,
+  X,
+} from "lucide-react";
 import "../styles/Menu.css";
 
 interface MenuProps {
   sessionId: string | null;
   menuOpen: boolean;
+  closeMenu: () => void;
   startSession: () => void;
   closeSession: () => void;
   joinSession: (sessionId: string) => void;
@@ -28,6 +40,7 @@ interface MenuProps {
 const Menu: React.FC<MenuProps> = ({
   sessionId,
   menuOpen,
+  closeMenu,
   startSession,
   closeSession,
   joinSession,
@@ -135,83 +148,127 @@ const Menu: React.FC<MenuProps> = ({
     }
   };
 
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      closeMenu();
+    }
+  };
+
   return (
-    <div className={`menu ${menuOpen ? "open" : ""}`}>
-      <ul>
-        <li>
-          <label htmlFor="file-upload" className="file-upload-label">
-            Upload File
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept=".tsv"
-            onChange={handleFileUpload}
-            style={{ display: "none" }}
-          />
-        </li>
-        <li onClick={handleResetBoardState}>Reset Board</li>
-        <li onClick={toggleScores}>Toggle Scores</li>
-        <li onClick={toggleManagingTeams}>
-          {managingTeams ? "Exit Team Management" : "Add/Remove Teams"}
-        </li>
-        <li
-          onClick={() => {
-            if (sessionId && player) {
-              leaveSession(); // Leave session if sessionId and player are true
-            } else if (sessionId) {
-              closeSession(); // Close session if only sessionId is true
-            } else {
-              startSession(); // Start session if sessionId is false
-            }
-          }}
-        >
-          {sessionId && player
-            ? "Leave Session"
-            : sessionId
-              ? "Close Session"
-              : "Start Session"}
-        </li>
-        <li className="session-join-wrapper">
-          {copyMessageVisible && (
-            <h5 className="copy-message">Copied to clipboard!</h5>
-          )}
-          <div className="session-join-container">
-            {!sessionId && !sessionLoading && (
-              <div className="session-input-wrapper">
+    <>
+      {menuOpen && (
+        <div className="menu-overlay" onClick={handleOverlayClick}>
+          <div className="menu">
+            <div className="menu-header">
+              <BookOpen size={20} />
+              <button
+                className="menu-close"
+                onClick={closeMenu}
+                aria-label="Close Menu"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <ul>
+              {player ? (
+                <li
+                  onClick={() => {
+                    leaveSession();
+                  }}
+                >
+                  <LogOut size={18} /> Leave Session
+                </li>
+              ) : (
+                <>
+              <li>
+                <label htmlFor="file-upload" className="file-upload-label">
+                  <Upload size={18} /> Upload File
+                </label>
                 <input
-                  type="text"
-                  placeholder="Enter Session ID"
-                  value={joinSessionId}
-                  onChange={(e) => {
-                    const input = e.target.value
-                      .toUpperCase()
-                      .replace(/[^A-Z]/g, "");
-                    setJoinSessionId(input);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleJoinSession();
-                    }
-                  }}
+                  id="file-upload"
+                  type="file"
+                  accept=".tsv"
+                  onChange={handleFileUpload}
+                  style={{ display: "none" }}
                 />
-                <button onClick={handleJoinSession}>Join Session</button>
-              </div>
-            )}
-            {!sessionId && sessionLoading && (
-              <div className="loading-spinner"></div>
-            )}
-            {sessionId && (
-              <>
-                <div className="session-id" onClick={handleCopySessionId}>
-                  Session ID: {sessionId}
+              </li>
+              <li onClick={handleResetBoardState}>
+                <RotateCcw size={18} /> Reset Board
+              </li>
+              <li onClick={toggleScores}>
+                <Eye size={18} /> Toggle Scores
+              </li>
+              <li onClick={toggleManagingTeams}>
+                <Users size={18} />{" "}
+                {managingTeams ? "Exit Team Management" : "Add/Remove Teams"}
+              </li>
+              <li
+                onClick={() => {
+                  if (sessionId) {
+                    closeSession();
+                  } else {
+                    startSession();
+                  }
+                }}
+              >
+                {sessionId ? (
+                  <>
+                    <LogOut size={18} /> Close Session
+                  </>
+                ) : (
+                  <>
+                    <Play size={18} /> Start Session
+                  </>
+                )}
+              </li>
+              <li className="session-join-wrapper">
+                {copyMessageVisible && (
+                  <h5 className="copy-message">Copied to clipboard!</h5>
+                )}
+                <div className="session-join-container">
+                  {!sessionId && !sessionLoading && (
+                    <div className="session-input-wrapper">
+                      <input
+                        type="text"
+                        placeholder="Enter Session ID"
+                        value={joinSessionId}
+                        onChange={(e) => {
+                          const input = e.target.value
+                            .toUpperCase()
+                            .replace(/[^A-Z]/g, "");
+                          setJoinSessionId(input);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleJoinSession();
+                          }
+                        }}
+                      />
+                      <button onClick={handleJoinSession}>Join Session</button>
+                    </div>
+                  )}
+                  {!sessionId && sessionLoading && (
+                    <div className="loading-spinner"></div>
+                  )}
+                  {sessionId && (
+                    <>
+                      <div
+                        className="session-id"
+                        onClick={handleCopySessionId}
+                      >
+                        <Copy size={14} /> Session ID: {sessionId}
+                      </div>
+                    </>
+                  )}
                 </div>
+              </li>
               </>
-            )}
+              )}
+            </ul>
           </div>
-        </li>
-      </ul>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

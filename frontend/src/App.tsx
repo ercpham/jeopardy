@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { Unlock, BookOpen } from "lucide-react";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
 import BuzzerPage from "./pages/BuzzerPage";
@@ -25,7 +26,7 @@ const App: React.FC = () => {
     useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells, setRecentlyClickedIndex } = useBoard();
-  const { sessionId, startSession, closeSession, joinSession, setSessionId, wsRef } =
+  const { sessionId, startSession, closeSession, joinSession, setSessionId, wsRef, sessionLoading } =
     useSession();
   const { setIsHomePage } = usePage();
   const location = useLocation();
@@ -35,6 +36,7 @@ const App: React.FC = () => {
   const [boardKey, setBoardKey] = useState(0);
   const [player, setPlayer] = useState(false);
   const [managingTeams, setManagingTeams] = useState(false);
+  const [mobileSessionId, setMobileSessionId] = useState("");
 
   useEffect(() => {
     const onHome = !player && location.pathname === "/";
@@ -72,6 +74,13 @@ const App: React.FC = () => {
     setPlayer(false);
     hasPlayedBuzzerRef.current = false;
     setSessionId(null);
+    setMobileSessionId("");
+  };
+
+  const handleMobileJoin = () => {
+    if (mobileSessionId.trim()) {
+      handleJoinSession(mobileSessionId.trim());
+    }
   };
 
   const handleStartSession = () => {
@@ -105,9 +114,10 @@ const App: React.FC = () => {
 
   return (
     <>
-      <Menu
+       <Menu
         sessionId={sessionId}
         menuOpen={menuOpen}
+        closeMenu={() => setMenuOpen(false)}
         startSession={handleStartSession}
         closeSession={closeSession}
         joinSession={handleJoinSession}
@@ -119,7 +129,7 @@ const App: React.FC = () => {
         toggleManagingTeams={toggleManagingTeams}
         managingTeams={managingTeams}
       />
-       <div className={`routeContainer ${menuOpen ? "shifted" : ""}`}>
+       <div className={`routeContainer ${player ? "player-active" : ""}`}>
          <button
            className="hamburger-button"
            onClick={toggleMenu}
@@ -127,22 +137,46 @@ const App: React.FC = () => {
          >
            ☰
          </button>
-         {!player && <Settings />}
-         {buzzLock && !player && (
+        {!player && <Settings />}
+        {buzzLock && !player && (
           <button
             onClick={releaseBuzzLock}
-            className={"lock-button"}
+            className="lock-button"
             aria-label="Release Buzz Lock"
           >
-            <span role="img" aria-label="Unlocked Padlock">
-              🔓
-            </span>
+            <Unlock size={20} />
           </button>
         )}
-        {player ? (
+        {player && (
           <BuzzerPage buzzIn={buzzIn} teams={teams} />
-        ) : (
-          <Routes>
+        )}
+        <div className={`mobile-landing ${player ? "hidden" : ""}`}>
+          <BookOpen size={40} />
+          <h2>Bible Challenge</h2>
+          <p className="mobile-landing-subtitle">Enter a session code to join the game</p>
+          {sessionLoading ? (
+            <div className="loading-spinner"></div>
+          ) : (
+            <div className="mobile-landing-form">
+              <input
+                type="text"
+                placeholder="Session Code"
+                value={mobileSessionId}
+                onChange={(e) => {
+                  const input = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
+                  setMobileSessionId(input);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleMobileJoin();
+                }}
+                maxLength={4}
+              />
+              <button onClick={handleMobileJoin}>Join Session</button>
+            </div>
+          )}
+        </div>
+        <div className="desktop-content">
+        <Routes>
             <Route
               path="/"
               element={
@@ -151,7 +185,6 @@ const App: React.FC = () => {
             />
             <Route path="/question/:id" element={<QuestionPage />} />
           </Routes>
-        )}
         {showScores && (
           <ScoreContainer
             teams={teams}
@@ -163,6 +196,7 @@ const App: React.FC = () => {
             removeTeam={removeTeam}
           />
         )}
+        </div>
       </div>
     </>
   );

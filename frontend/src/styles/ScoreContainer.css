@@ -55,12 +55,13 @@
   flex: 0 0 auto;
   width: 6rem;
   height: 100%;
+  align-self: center;
 }
 
 .add-team-button {
-  background-color: var(--button-bg);
-  color: var(--text-color);
-  border: none;
+  background: none;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
   font-size: 2rem;
   width: 4rem;
   height: 4rem;
@@ -69,10 +70,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: none;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .add-team-button:hover {
   background-color: var(--button-hover);
-  transform: scale(1.1);
+  border-color: var(--border-color);
+  color: var(--text-color);
 }

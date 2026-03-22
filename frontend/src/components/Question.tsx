@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../context/SettingsContext";
 import { useTeam } from "../context/TeamContext";
+import { Timer } from "lucide-react";
 import "../styles/Question.css";
 
 const TIMER_DURATION = 30;
@@ -192,7 +193,7 @@ const Question: React.FC<{
         </button>
         {timerEnabled && !revealed && (
           <div className={`timer-display ${getTimerClass()}`}>
-            <span className="timer-icon">⏱</span>
+            <Timer size={18} />
             <span className="timer-text">
               {timerExpired ? "Time's up!" : formatTime(timeLeft)}
             </span>

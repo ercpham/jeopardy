@@ -15,6 +15,14 @@
   --shadow-color: rgba(0, 0, 0, 0.1);
   --menu-bg: #ffffff;
   --session-bg: #f9f9f9;
+  --action-color: #005ec2;
+  --action-hover: #004bb0;
+  --action-text: #ffffff;
+  --danger-hover: rgba(255, 77, 77, 0.15);
+  --fs-xs: 1.4rem;
+  --fs-sm: 1.6rem;
+  --fs-md: 1.85rem;
+  --fs-lg: 2.2rem;
 }
 
 :root.dark-mode {
@@ -32,6 +40,10 @@
   --shadow-color: rgba(0, 0, 0, 0.3);
   --menu-bg: #16213e;
   --session-bg: #1a1a2e;
+  --action-color: #3b82f6;
+  --action-hover: #2563eb;
+  --action-text: #ffffff;
+  --danger-hover: rgba(239, 68, 68, 0.2);
 }
 
 body,
@@ -47,28 +59,28 @@ html {
 
 h1 {
   text-align: center;
-  font-size: calc(1.5rem + 1vw);
+  font-size: var(--fs-lg);
 }
 
 h2 {
-  font-size: calc(1.25rem + 0.8vw);
+  font-size: var(--fs-md);
 }
 
 h3 {
-  font-size: calc(1.25rem + 0.8vw);
+  font-size: var(--fs-md);
   font-weight: normal;
 }
 
 h4 {
-  font-size: calc(1rem + 0.5vw);
+  font-size: var(--fs-sm);
 }
 
 h5 {
-  font-size: calc(.7rem + 0.3vw);
+  font-size: var(--fs-xs);
 }
 
 button {
-  font-size: calc(1.4rem + 0.5vw);
+  font-size: var(--fs-sm);
   background-color: var(--button-bg);
   border: none;
   border-radius: 5px;
@@ -88,20 +100,20 @@ button:active {
 }
 
 li {
-  font-size: calc(1.50rem + 0.1vw);
+  font-size: var(--fs-sm);
   list-style: none;
 }
 
 label {
-  font-size: calc(1.50rem + 0.1vw);
+  font-size: var(--fs-sm);
 }
 
 select {
-  font-size: calc(1.50rem + 0.1vw);
+  font-size: var(--fs-sm);
 }
 
 input {
-  font-size: calc(0.8rem + 0.4vw);
+  font-size: var(--fs-sm);
   background-color: var(--button-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -125,12 +137,7 @@ input[type=number] {
   justify-content: center;
   height: 100vh;
   width: 100vw;
-  transition: margin-left 0.3s;
   position: relative;
-}
-
-.routeContainer.shifted {
-  margin-left: 18rem;
 }
 
 .hamburger-button {
@@ -154,6 +161,10 @@ input[type=number] {
   right: 1rem;
   border: none;
   cursor: pointer;
+  background-color: var(--button-bg);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: var(--shadow-color) 2px 2px 2px;
 }
 
 .loading-spinner {
@@ -176,6 +187,23 @@ input[type=number] {
   }
 }
 
+.desktop-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.routeContainer.player-active .desktop-content {
+  display: none;
+}
+
+.mobile-landing {
+  display: none;
+}
+
 @media (min-width: 768px) {
   body {
     overflow: hidden;
@@ -185,5 +213,81 @@ input[type=number] {
 @media (max-width: 767px) {
   body {
     overflow: auto;
+  }
+
+  .desktop-content {
+    display: none;
+  }
+
+  .mobile-landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
+    gap: 1rem;
+  }
+
+  .mobile-landing.hidden {
+    display: none;
+  }
+
+  .mobile-landing svg {
+    color: var(--text-secondary);
+  }
+
+  .mobile-landing h2 {
+    margin: 0;
+  }
+
+  .mobile-landing-subtitle {
+    font-size: var(--fs-xs);
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+  }
+
+  .mobile-landing-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .mobile-landing-form input {
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: var(--fs-sm);
+    letter-spacing: 0.2em;
+    font-weight: 600;
+  }
+
+  .mobile-landing-form button {
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    background-color: var(--action-color);
+    color: var(--action-text);
+  }
+
+  .mobile-landing-form button:hover {
+    background-color: var(--action-hover);
+    transform: none;
+  }
+
+  .hamburger-button,
+  .settings-button,
+  .lock-button {
+    display: none;
+  }
+
+  .routeContainer.player-active .hamburger-button {
+    display: block;
   }
 }

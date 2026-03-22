@@ -14,6 +14,7 @@
 import React, { useState, useEffect } from "react";
 import { Team } from "../context/TeamContext";
 import { useBoard } from "../context/BoardContext";
+import { Plus, Minus, X } from "lucide-react";
 import "../styles/Score.css";
 
 const Score: React.FC<{
@@ -73,21 +74,21 @@ const Score: React.FC<{
         )}
         {managingTeams && controls && removeTeam && (
           <button className="remove-team-button" onClick={removeTeam} aria-label="Remove Team">
-            ×
+            <X size={14} />
           </button>
         )}
       </div>
       <h1>{team.score}</h1>
       {controls && (
         <div className="score-controls">
-          <button onClick={handleAdd}>+</button>
+          <button onClick={handleSubtract}><Minus size={16} /></button>
           <input
             type="number"
             value={inputValue}
             onChange={(e) => setInputValue(Number(e.target.value))}
             className="score-input"
           />
-          <button onClick={handleSubtract}>-</button>
+          <button onClick={handleAdd}><Plus size={16} /></button>
         </div>
       )}
     </div>

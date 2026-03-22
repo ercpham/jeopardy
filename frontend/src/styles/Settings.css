@@ -51,24 +51,27 @@
 
 .settings-header h2 {
   margin: 0;
-  font-size: calc(1.3rem + 0.5vw);
+  font-size: var(--fs-lg);
 }
 
 .settings-close {
   background: none;
   box-shadow: none;
-  font-size: 1.8rem;
-  line-height: 1;
-  padding: 0 0.3rem;
-  color: var(--text-color, #666);
+  padding: 0.3rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #666);
   cursor: pointer;
-  transition: color 0.2s, transform 0.2s;
+  transition: color 0.2s, background-color 0.2s;
 }
 
 .settings-close:hover {
   background: none;
   color: var(--text-color, #333);
-  transform: scale(1.2);
+  background-color: var(--button-hover, #f1f1f1);
+  transform: none;
 }
 
 .settings-content {
@@ -88,12 +91,12 @@
 
 .settings-option-info h4 {
   margin: 0 0 0.2rem 0;
-  font-size: calc(0.9rem + 0.3vw);
+  font-size: var(--fs-xs);
 }
 
 .settings-option-info p {
   margin: 0;
-  font-size: calc(0.7rem + 0.2vw);
+  font-size: var(--fs-xs);
   color: var(--text-secondary, #666);
 }
 
