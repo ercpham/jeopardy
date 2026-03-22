@@ -7,6 +7,7 @@ import { QuestionsProvider } from "./context/QuestionsContext";
 import { TeamProvider } from "./context/TeamContext";
 import { SessionProvider } from "./context/SessionContext";
 import { SettingsProvider } from "./context/SettingsContext";
+import { PageProvider } from "./context/PageContext";
 import "./styles/App.css";
 
 const root = ReactDOM.createRoot(
@@ -17,15 +18,17 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <SessionProvider>
-        <SettingsProvider>
-          <TeamProvider>
-            <QuestionsProvider>
-              <BoardProvider>
-                <App />
-              </BoardProvider>
-            </QuestionsProvider>
-          </TeamProvider>
-        </SettingsProvider>
+        <PageProvider>
+          <SettingsProvider>
+            <TeamProvider>
+              <QuestionsProvider>
+                <BoardProvider>
+                  <App />
+                </BoardProvider>
+              </QuestionsProvider>
+            </TeamProvider>
+          </SettingsProvider>
+        </PageProvider>
       </SessionProvider>
     </BrowserRouter>
   </React.StrictMode>

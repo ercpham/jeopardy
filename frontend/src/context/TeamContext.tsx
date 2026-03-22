@@ -58,6 +58,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
 
 
   const { sessionId, setSessionId, wsRef, setOnWsMessage, sessionState } = useSession();
+  const currentPageRef = useRef("home");
 
   // Derive loading: true while waiting for initial session state from WS
   const loading = !!(sessionId && !sessionState);
@@ -70,6 +71,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
     buzz_lock: boolean;
     dark_mode: boolean;
     timer_enabled: boolean;
+    current_page?: string;
     created_at: string;
     last_modified: string;
   }) => {
@@ -86,6 +88,9 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!session.buzz_lock) {
         hasPlayedBuzzerRef.current = false;
       }
+    }
+    if (session.current_page) {
+      currentPageRef.current = session.current_page;
     }
 }, []);
 
@@ -149,7 +154,11 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
           case "BuzzReleased":
             setBuzzLock(false);
             setTeams((prev) =>
-              prev.map((team) => ({ ...team, buzz_lock_owned: false }))
+              prev.map((team) => ({
+                ...team,
+                buzz_lock_owned: false,
+                has_buzzed: currentPageRef.current === "home" ? false : team.has_buzzed,
+              }))
             );
             hasPlayedBuzzerRef.current = false;
             break;
@@ -176,6 +185,16 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
              setBuzzLock(true);
              // No team owns the lock — timer expiry
              setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false })));
+             break;
+
+           case "HasBuzzedReset":
+             setBuzzLock(false);
+             currentPageRef.current = "home";
+             setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false })));
+             break;
+
+           case "PageUpdate":
+             currentPageRef.current = msg.page;
              break;
 
            case "TeamAdded":
@@ -223,7 +242,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [sessionState, sessionId, applyFullState]);
 
   /**
-   * Reset has_buzzed for all teams (called when new question starts)
+   * Reset has_buzzed for all teams (called when new question starts or going home)
    */
   const resetBuzzedTeams = () => {
     setTeams((prev) => prev.map((team) => ({ ...team, has_buzzed: false })));
@@ -265,7 +284,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
             : { ...team, buzz_lock_owned: false, has_buzzed: team.has_buzzed }
         )
       );
-      // 15-second timer will be handled by Question component if on question page
       return;
     }
 
@@ -287,7 +305,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
                 : { ...team, buzz_lock_owned: false, has_buzzed: team.has_buzzed }
             )
           );
-          // 15-second timer will be handled by Question component if on question page
         }
       })
       .catch(() => {});

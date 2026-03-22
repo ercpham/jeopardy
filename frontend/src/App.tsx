@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
 import BuzzerPage from "./pages/BuzzerPage";
@@ -16,6 +16,7 @@ import { useTeam } from "./context/TeamContext";
 import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
 import { useSession } from "./context/SessionContext";
+import { usePage } from "./context/PageContext";
 import Menu from "./components/Menu";
 import Settings from "./components/Settings";
 
@@ -24,14 +25,24 @@ const App: React.FC = () => {
     useTeam();
   const { resetQuestions, setQuestions } = useQuestions();
   const { resetClickedCells, setRecentlyClickedIndex } = useBoard();
-  const { sessionId, startSession, closeSession, joinSession, setSessionId } =
+  const { sessionId, startSession, closeSession, joinSession, setSessionId, wsRef } =
     useSession();
+  const { setIsHomePage } = usePage();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScores, setShowScores] = useState(false);
   const [triggerAnimation, setTriggerAnimation] = useState(false);
   const [boardKey, setBoardKey] = useState(0);
   const [player, setPlayer] = useState(false);
   const [managingTeams, setManagingTeams] = useState(false);
+
+  useEffect(() => {
+    const onHome = !player && location.pathname === "/";
+    setIsHomePage(onHome);
+    if (sessionId && wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "SetPage", page: onHome ? "home" : "question" }));
+    }
+  }, [player, location.pathname, setIsHomePage, sessionId, wsRef]);
 
   useEffect(() => {
     if (sessionId === null) {

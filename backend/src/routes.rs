@@ -141,11 +141,13 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
     match msg {
         WsClientMsg::BuzzIn { team_index } => {
             if !session.buzz_lock {
+                let is_home = session.current_page == "home";
                 if let Some(team) = session.teams.get_mut(team_index) {
-                    // Check if team has already buzzed for this question
                     if !team.has_buzzed {
                         team.buzz_lock_owned = true;
-                        team.has_buzzed = true;
+                        if !is_home {
+                            team.has_buzzed = true;
+                        }
                         session.buzz_lock = true;
                         session.last_modified = Utc::now();
                         drop(session);
@@ -159,7 +161,6 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
             session.buzz_lock = false;
             for team in &mut session.teams {
                 team.buzz_lock_owned = false;
-                // Don't reset has_buzzed here - it should persist until new question
             }
             session.last_modified = Utc::now();
             drop(session);
@@ -246,6 +247,36 @@ session.last_modified = Utc::now();
                   broadcast(state, session_id, &WsServerMsg::TeamRemoved { team_index }).await;
               }
           }
+          WsClientMsg::ResetHasBuzzed => {
+              session.buzz_lock = false;
+              for team in &mut session.teams {
+                  team.buzz_lock_owned = false;
+                  team.has_buzzed = false;
+              }
+              session.last_modified = Utc::now();
+              drop(session);
+              drop(sessions);
+              broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
+          }
+          WsClientMsg::SetPage { page } => {
+              session.current_page = page;
+              session.last_modified = Utc::now();
+              if session.current_page == "home" {
+                  session.buzz_lock = false;
+                  for team in &mut session.teams {
+                      team.buzz_lock_owned = false;
+                      team.has_buzzed = false;
+                  }
+                  drop(session);
+                  drop(sessions);
+                  broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
+              } else {
+                  let page = session.current_page.clone();
+                  drop(session);
+                  drop(sessions);
+                  broadcast(state, session_id, &WsServerMsg::PageUpdate { page }).await;
+              }
+          }
      }
 }
 
@@ -265,13 +296,15 @@ async fn apply_buzz_lock(
     if session.buzz_lock {
         return None;
     }
+    let is_home = session.current_page == "home";
     let team = session.teams.get_mut(team_index)?;
-    // Check if team has already buzzed for this question
     if team.has_buzzed {
         return None;
     }
     team.buzz_lock_owned = true;
-    team.has_buzzed = true;
+    if !is_home {
+        team.has_buzzed = true;
+    }
     session.buzz_lock = true;
     session.last_modified = Utc::now();
     drop(session);
@@ -318,6 +351,7 @@ pub async fn start_session(State(state): State<Arc<AppState>>) -> Json<String> {
         buzz_lock: false,
         dark_mode: false,
         timer_enabled: false,
+        current_page: "home".to_string(),
         teams: vec![
             Team {
                 team_name: "Team 1".to_string(),

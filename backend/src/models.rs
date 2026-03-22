@@ -24,6 +24,7 @@ pub struct Session {
     pub buzz_lock: bool,
     pub dark_mode: bool,
     pub timer_enabled: bool,
+    pub current_page: String,
     pub created_at: DateTime<Utc>,
     pub last_modified: DateTime<Utc>,
 }
@@ -41,6 +42,8 @@ pub enum WsClientMsg {
     UpdateTimerEnabled { enabled: bool },
     AddTeam,
     RemoveTeam { team_index: usize },
+    ResetHasBuzzed,
+    SetPage { page: String },
 }
 
 /// Messages sent from server to client over WebSocket.
@@ -57,6 +60,8 @@ pub enum WsServerMsg {
     TimerEnabledUpdate { enabled: bool },
     TeamAdded { team: Team },
     TeamRemoved { team_index: usize },
+    HasBuzzedReset,
+    PageUpdate { page: String },
     SessionClosed,
 }
 
