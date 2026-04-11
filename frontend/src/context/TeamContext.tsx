@@ -20,6 +20,12 @@ export interface Team {
   score: number;
   buzz_lock_owned: boolean;
   has_buzzed: boolean; // Track if team has buzzed for current question
+  last_buzz_attempt: string | null;
+}
+
+interface BuzzFeedback {
+  visible: boolean;
+  message: string;
 }
 
 interface TeamContextProps {
@@ -36,12 +42,13 @@ interface TeamContextProps {
   addTeam: () => void;
   removeTeam: (index: number) => void;
   resetBuzzedTeams: () => void; // Reset has_buzzed when new question starts
+  buzzFeedback: BuzzFeedback;
 }
 
 const defaultTeams: Team[] = [
-  { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false },
-  { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false },
-  { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false },
+  { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
+  { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
+  { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
 ];
 
 const TeamContext = createContext<TeamContextProps | undefined>(undefined);
@@ -54,7 +61,12 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [teams, setTeams] = useState<Team[]>(defaultTeams);
   const [buzzLock, setBuzzLock] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<number>(0);
+  const [buzzFeedback, setBuzzFeedback] = useState<BuzzFeedback>({
+    visible: false,
+    message: '',
+  });
   const hasPlayedBuzzerRef = useRef(false);
+  const lastBuzzAttemptRef = useRef<Map<number, number>>(new Map());
 
 
   const { sessionId, setSessionId, wsRef, setOnWsMessage, sessionState } = useSession();
@@ -149,6 +161,53 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
               buzzerSound.play().catch(() => {});
               hasPlayedBuzzerRef.current = true;
             }
+            
+            // Show timing feedback if another team got the buzz
+            if (msg.team_index !== selectedTeam && msg.server_timestamp && msg.client_timestamp && msg.team_name) {
+              try {
+                const serverTime = new Date(msg.server_timestamp).getTime();
+                const echoedClientTime = new Date(msg.client_timestamp).getTime();
+                const originalClientTime = lastBuzzAttemptRef.current.get(selectedTeam);
+                
+                if (originalClientTime) {
+                  // Calculate time difference with clock skew compensation
+                  const roundTripTime = serverTime - originalClientTime;
+                  const oneWayLatency = roundTripTime / 2;
+                  const clockSkew = echoedClientTime - (originalClientTime + oneWayLatency);
+                  const adjustedServerTime = serverTime - clockSkew;
+                  const timeDiff = adjustedServerTime - originalClientTime;
+                  
+                  // Only show feedback if within reasonable range (0-2000ms)
+                  if (timeDiff >= -100 && timeDiff <= 2100) {
+                    const displayDiff = Math.max(0, Math.round(timeDiff));
+                    let message = `${msg.team_name} buzzed in ${displayDiff} ms before you!`;
+                    
+                    if (displayDiff < 50) {
+                      message = `${msg.team_name} buzzed just before you!`;
+                    } else if (displayDiff > 1000) {
+                      const seconds = (displayDiff / 1000).toFixed(1);
+                      message = `${msg.team_name} buzzed ${seconds} seconds before you!`;
+                    }
+                    
+                    setBuzzFeedback({
+                      visible: true,
+                      message,
+                    });
+                    
+                    // Auto-hide after 3 seconds
+                    setTimeout(() => {
+                      setBuzzFeedback(prev => ({ ...prev, visible: false }));
+                    }, 3000);
+                  }
+                }
+              } catch (error) {
+                // Ignore timestamp parsing errors - show no feedback
+                console.error('Error parsing buzz timestamps:', error);
+              }
+            }
+            
+            // Clear the stored timestamp for this team
+            lastBuzzAttemptRef.current.delete(selectedTeam);
             break;
 
           case "BuzzReleased":
@@ -285,9 +344,17 @@ case "TeamRemoved":
 
     if (buzzLock) return;
 
+    // Record client timestamp for this buzz attempt
+    const clientTimestamp = new Date().toISOString();
+    lastBuzzAttemptRef.current.set(teamIndex, Date.now());
+
     // Try WebSocket first
     if (
-      sendWsMessage({ type: "BuzzIn", team_index: teamIndex })
+      sendWsMessage({ 
+        type: "BuzzIn", 
+        team_index: teamIndex,
+        client_timestamp: clientTimestamp 
+      })
     ) {
       // Optimistic update - server will confirm
       setBuzzLock(true);
@@ -301,7 +368,7 @@ case "TeamRemoved":
       return;
     }
 
-    // Fallback to HTTP
+    // Fallback to HTTP (HTTP won't get timing feedback)
     fetch(`${API_URL}/session/${sessionId}/buzz/${teamIndex}`, {
       method: "POST",
     })
@@ -376,6 +443,7 @@ case "TeamRemoved":
         score: 0,
         buzz_lock_owned: false,
         has_buzzed: false,
+        last_buzz_attempt: null,
       };
       setTeams((prev) => [...prev, newTeam]);
       return;
@@ -423,6 +491,7 @@ case "TeamRemoved":
         addTeam,
         removeTeam,
         resetBuzzedTeams,
+        buzzFeedback,
       }}
     >
       {children}

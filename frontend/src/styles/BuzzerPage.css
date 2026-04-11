@@ -7,6 +7,8 @@
   height: 70vh;
   width: 100vw;
   position: relative;
+  overflow: hidden;
+  touch-action: none;
 }
 
 .team-selector {
@@ -45,6 +47,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
   animation: pulse-shadow 1.5s infinite ease-in-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .buzzer-button.lock_owned {
@@ -61,7 +69,8 @@
   background-color: var(--action-hover);
 }
 
-.buzzer-button:active {
+.buzzer-button:active,
+.buzzer-button.pressed {
   transform: scale(0.95);
   background-color: var(--action-hover);
 }
@@ -84,5 +93,46 @@
   }
   100% {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Buzz Feedback Styles */
+.buzz-feedback {
+  position: absolute;
+  top: calc(1rem + 40px + 10px); /* Below team selector + margin */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--modal-bg);
+  color: var(--text-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-align: center;
+  z-index: 100;
+  opacity: 0;
+  animation: buzzFeedbackFade 3s forwards;
+  pointer-events: none; /* Don't interfere with clicks */
+  max-width: 80%;
+  white-space: nowrap;
+}
+
+@keyframes buzzFeedbackFade {
+  0% { 
+    opacity: 0; 
+    transform: translateX(-50%) translateY(-10px); 
+  }
+  20% { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0); 
+  }
+  80% { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateX(-50%) translateY(-10px); 
   }
 }

@@ -139,12 +139,19 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
     let mut session = session_mutex.lock().await;
 
     match msg {
-        WsClientMsg::BuzzIn { team_index } => {
+        WsClientMsg::BuzzIn { team_index, client_timestamp } => {
             if !session.buzz_lock {
                 let is_home = session.current_page == "home";
                 if let Some(team) = session.teams.get_mut(team_index) {
                     if !team.has_buzzed {
+                        let server_time = Utc::now();
+                        let team_name = team.team_name.clone();
+                        
+                        // Parse client timestamp, ignore if malformed (show no feedback)
+                        let _ = chrono::DateTime::parse_from_rfc3339(&client_timestamp);
+                        
                         team.buzz_lock_owned = true;
+                        team.last_buzz_attempt = Some(server_time);
                         if !is_home {
                             team.has_buzzed = true;
                         }
@@ -152,7 +159,12 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
                         session.last_modified = Utc::now();
                         drop(session);
                         drop(sessions);
-                        broadcast(state, session_id, &WsServerMsg::BuzzLocked { team_index }).await;
+                        broadcast(state, session_id, &WsServerMsg::BuzzLocked { 
+                            team_index,
+                            server_timestamp: server_time,
+                            client_timestamp,
+                            team_name,
+                        }).await;
                     }
                 }
             }
@@ -226,12 +238,13 @@ session.last_modified = Utc::now();
           }
           WsClientMsg::AddTeam => {
               let new_team_index = session.teams.len();
-              let new_team = Team {
-                  team_name: format!("Team {}", new_team_index + 1),
-                  score: 0,
-                  buzz_lock_owned: false,
-                  has_buzzed: false,
-              };
+let new_team = Team {
+                   team_name: format!("Team {}", new_team_index + 1),
+                   score: 0,
+                   buzz_lock_owned: false,
+                   has_buzzed: false,
+                   last_buzz_attempt: None,
+               };
               session.teams.push(new_team.clone());
               session.last_modified = Utc::now();
               drop(session);
@@ -258,26 +271,35 @@ session.last_modified = Utc::now();
               drop(sessions);
               broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
           }
-          WsClientMsg::SetPage { page } => {
-              session.current_page = page;
-              session.last_modified = Utc::now();
-              if session.current_page == "home" {
-                  session.buzz_lock = false;
-                  for team in &mut session.teams {
-                      team.buzz_lock_owned = false;
-                      team.has_buzzed = false;
-                  }
-                  drop(session);
-                  drop(sessions);
-                  broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
-              } else {
-                  let page = session.current_page.clone();
-                  drop(session);
-                  drop(sessions);
-                  broadcast(state, session_id, &WsServerMsg::PageUpdate { page }).await;
-              }
-          }
-     }
+WsClientMsg::SetPage { page } => {
+               session.current_page = page;
+               session.last_modified = Utc::now();
+               if session.current_page == "home" {
+                   session.buzz_lock = false;
+                   for team in &mut session.teams {
+                       team.buzz_lock_owned = false;
+                       team.has_buzzed = false;
+                   }
+                   drop(session);
+                   drop(sessions);
+                   broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
+               } else {
+                   let page = session.current_page.clone();
+                   drop(session);
+                   drop(sessions);
+                   broadcast(state, session_id, &WsServerMsg::PageUpdate { page }).await;
+               }
+           }
+           WsClientMsg::Ping { client_timestamp } => {
+               let server_time = Utc::now();
+               drop(session);
+               drop(sessions);
+               broadcast(state, session_id, &WsServerMsg::Pong {
+                   server_timestamp: server_time,
+                   client_timestamp,
+               }).await;
+           }
+      }
 }
 
 // ──────────────────────────────────────────────
@@ -301,7 +323,10 @@ async fn apply_buzz_lock(
     if team.has_buzzed {
         return None;
     }
+    let server_time = Utc::now();
+    let team_name = team.team_name.clone();
     team.buzz_lock_owned = true;
+    team.last_buzz_attempt = Some(server_time);
     if !is_home {
         team.has_buzzed = true;
     }
@@ -309,7 +334,14 @@ async fn apply_buzz_lock(
     session.last_modified = Utc::now();
     drop(session);
     drop(sessions);
-    broadcast(state, session_id, &WsServerMsg::BuzzLocked { team_index }).await;
+    // For HTTP, use current time as client timestamp placeholder
+    let client_timestamp = server_time.to_rfc3339();
+    broadcast(state, session_id, &WsServerMsg::BuzzLocked { 
+        team_index,
+        server_timestamp: server_time,
+        client_timestamp,
+        team_name,
+    }).await;
     Some(())
 }
 
@@ -358,18 +390,21 @@ pub async fn start_session(State(state): State<Arc<AppState>>) -> Json<String> {
                 score: 0,
                 buzz_lock_owned: false,
                 has_buzzed: false,
+                last_buzz_attempt: None,
             },
             Team {
                 team_name: "Team 2".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
                 has_buzzed: false,
+                last_buzz_attempt: None,
             },
             Team {
                 team_name: "Team 3".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
                 has_buzzed: false,
+                last_buzz_attempt: None,
             },
         ],
     };

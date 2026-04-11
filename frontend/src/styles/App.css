@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
 :root {
-  --bg-color: #f7f7f7;
-  --text-color: #333333;
-  --text-secondary: #666666;
+  --bg-color: #f0f0f0;
+  --text-color: #222222;
+  --text-secondary: #555555;
   --card-bg: #ffffff;
   --modal-bg: #ffffff;
-  --option-bg: #f7f7f7;
-  --border-color: #e0e0e0;
+  --option-bg: #f0f0f0;
+  --border-color: #cccccc;
   --timer-bg: #005ec2;
   --button-bg: #ffffff;
-  --button-hover: #f1f1f1;
-  --button-active: #d8d8d8;
+  --button-hover: #e8e8e8;
+  --button-active: #b0b0b0;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --menu-bg: #ffffff;
   --session-bg: #f9f9f9;
@@ -19,24 +19,24 @@
   --action-hover: #004bb0;
   --action-text: #ffffff;
   --danger-hover: rgba(255, 77, 77, 0.15);
-  --fs-xs: 1.4rem;
-  --fs-sm: 1.6rem;
-  --fs-md: 1.85rem;
-  --fs-lg: 2.2rem;
+  --fs-xs: 1.8rem;
+  --fs-sm: 2.0rem;
+  --fs-md: 2.4rem;
+  --fs-lg: 2.8rem;
 }
 
 :root.dark-mode {
-  --bg-color: #1a1a2e;
-  --text-color: #e0e0e0;
-  --text-secondary: #a0a0a0;
-  --card-bg: #16213e;
-  --modal-bg: #16213e;
-  --option-bg: #1a1a2e;
-  --border-color: #2a2a4a;
+  --bg-color: #111122;
+  --text-color: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --card-bg: #1a1a3a;
+  --modal-bg: #1a1a3a;
+  --option-bg: #111122;
+  --border-color: #3a3a5a;
   --timer-bg: #0a3d6e;
   --button-bg: #1f4068;
-  --button-hover: #254b73;
-  --button-active: #162d50;
+  --button-hover: #1a3559;
+  --button-active: #0f2038;
   --shadow-color: rgba(0, 0, 0, 0.3);
   --menu-bg: #16213e;
   --session-bg: #1a1a2e;
@@ -138,6 +138,10 @@ input[type=number] {
   height: 100vh;
   width: 100vw;
   position: relative;
+}
+
+.routeContainer.player-active {
+  overflow: hidden;
 }
 
 .hamburger-button {
@@ -281,6 +285,25 @@ input[type=number] {
     transform: none;
   }
 
+  .mobile-session-error {
+    color: #dc2626;
+    font-size: var(--fs-xs);
+    margin-top: 0.5rem;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .hamburger-button,
   .settings-button,
   .lock-button {
@@ -290,4 +313,40 @@ input[type=number] {
   .routeContainer.player-active .hamburger-button {
     display: block;
   }
+}
+/* Connection Indicator Styles */
+.connection-indicator-container {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  z-index: 1000;
+  cursor: help;
+  transition: background-color 0.3s, opacity 0.3s;
+}
+
+.connection-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transition: background-color 0.3s, opacity 0.3s;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.ping-display {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

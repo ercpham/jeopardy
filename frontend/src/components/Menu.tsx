@@ -19,7 +19,7 @@ interface MenuProps {
   closeMenu: () => void;
   startSession: () => void;
   closeSession: () => void;
-  joinSession: (sessionId: string) => void;
+  joinSession: (sessionId: string) => Promise<boolean>;
   leaveSession: () => void;
   toggleScores: () => void;
   setQuestions: (questions: {
@@ -133,9 +133,9 @@ const Menu: React.FC<MenuProps> = ({
     fileInput.value = "";
   };
 
-  const handleJoinSession = () => {
+  const handleJoinSession = async () => {
     if (joinSessionId.trim()) {
-      joinSession(joinSessionId.trim());
+      await joinSession(joinSessionId.trim());
       setJoinSessionId("");
     }
   };
