@@ -17,10 +17,16 @@ use tokio::time::{timeout, Duration};
 /// Broadcasts a server message to all WebSocket clients in a session.
 /// Removes clients whose send channel has been closed.
 async fn broadcast(state: &AppState, session_id: &str, msg: &WsServerMsg) {
-    let payload = serde_json::to_string(msg).unwrap_or_default();
-    let mut clients = state.ws_clients.write().await;
-    if let Some(senders) = clients.get_mut(session_id) {
-        senders.retain(|tx| tx.send(payload.clone()).is_ok());
+    match serde_json::to_string(msg) {
+        Ok(payload) => {
+            let mut clients = state.ws_clients.write().await;
+            if let Some(senders) = clients.get_mut(session_id) {
+                senders.retain(|tx| tx.send(payload.clone()).is_ok());
+            }
+        }
+        Err(err) => {
+            eprintln!("Failed to serialize WS server msg for broadcast: {}", err);
+        }
     }
 }
 
@@ -57,9 +63,16 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
                 let msg = WsServerMsg::FullState {
                     session: session.clone(),
                 };
-                let payload = serde_json::to_string(&msg).unwrap();
-                if sender.send(Message::Text(payload)).await.is_err() {
-                    return;
+                match serde_json::to_string(&msg) {
+                    Ok(payload) => {
+                        if sender.send(Message::Text(payload)).await.is_err() {
+                            return;
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to serialize FullState: {}", err);
+                        return;
+                    }
                 }
             }
             None => return,
@@ -75,11 +88,27 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
             .push(tx.clone());
     }
 
-    // Forward outgoing messages from the channel to the WebSocket
+    // Forward outgoing messages from the channel to the WebSocket and send periodic Ping frames.
     let mut send_task = tokio::spawn(async move {
-        while let Some(msg) = rx.recv().await {
-            if sender.send(Message::Text(msg)).await.is_err() {
-                break;
+        let mut ping_interval = tokio::time::interval(Duration::from_secs(30));
+        loop {
+            tokio::select! {
+                biased;
+                msg = rx.recv() => {
+                    match msg {
+                        Some(text) => {
+                            if sender.send(Message::Text(text)).await.is_err() {
+                                break;
+                            }
+                        }
+                        None => break,
+                    }
+                }
+                _ = ping_interval.tick() => {
+                    if sender.send(Message::Ping(vec![])).await.is_err() {
+                        break;
+                    }
+                }
             }
         }
     });
@@ -87,7 +116,6 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
     // Process incoming messages with heartbeat
     let recv_state = state.clone();
     let recv_session_id = session_id.clone();
-    let recv_tx = tx.clone();
     let mut recv_task = tokio::spawn(async move {
         loop {
             match timeout(Duration::from_secs(30), receiver.next()).await {
@@ -103,10 +131,9 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
                 }
                 Ok(Some(Err(_))) => break,
                 Err(_) => {
-                    // Timeout — send ping to keep connection alive
-                    if recv_tx.send(r#"{"type":"ping"}"#.to_string()).is_err() {
-                        break;
-                    }
+                    // Timeout waiting for client activity — no-op here.
+                    // Periodic Ping frames are sent from the send task.
+                    continue;
                 }
                 _ => {}
             }

@@ -137,7 +137,7 @@ const connectWs = useCallback(
            }));
          }
          
-         // Start periodic ping for connection health monitoring (every second)
+         // Start periodic ping for connection health monitoring (every 3s)
          pingIntervalRef.current = setInterval(() => {
            if (ws.readyState === WebSocket.OPEN) {
              const clientTimestamp = new Date().toISOString();
@@ -146,7 +146,7 @@ const connectWs = useCallback(
                client_timestamp: clientTimestamp 
              }));
            }
-         }, 1000); // Ping every second
+         }, 3000); // Ping every 3s
        };
 
       ws.onmessage = (event) => {
@@ -155,16 +155,19 @@ const connectWs = useCallback(
           if (msg.type === "FullState") {
             setSessionState(msg.session);
           } else if (msg.type === "Pong") {
-            const pongTime = Date.now();
-            const clientSentTime = new Date(msg.client_timestamp).getTime();
-            const roundTrip = pongTime - clientSentTime;
-            setPingLatency(roundTrip);
-            setLastPingTime(pongTime);
-            
-            // If latency is high, mark as degraded
-            if (roundTrip > 1000) {
-              setConnectionState('degraded');
-            }
+              const pongTime = Date.now();
+              const clientSentTime = new Date(msg.client_timestamp).getTime();
+              const roundTrip = pongTime - clientSentTime;
+              setPingLatency(roundTrip);
+              setLastPingTime(pongTime);
+
+              // If latency is high, mark as degraded; otherwise mark as connected
+              const DEGRADE_THRESHOLD_MS = 2000;
+              if (roundTrip > DEGRADE_THRESHOLD_MS) {
+                setConnectionState('degraded');
+              } else {
+                setConnectionState('connected');
+              }
           }
         } catch {
           // Ignore unparseable messages

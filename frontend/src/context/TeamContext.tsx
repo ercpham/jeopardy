@@ -61,6 +61,11 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
   const [teams, setTeams] = useState<Team[]>(defaultTeams);
   const [buzzLock, setBuzzLock] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<number>(0);
+  const selectedTeamRef = useRef<number>(selectedTeam);
+
+  useEffect(() => {
+    selectedTeamRef.current = selectedTeam;
+  }, [selectedTeam]);
   const [buzzFeedback, setBuzzFeedback] = useState<BuzzFeedback>({
     visible: false,
     message: '',
@@ -163,11 +168,11 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
             }
             
             // Show timing feedback if another team got the buzz
-            if (msg.team_index !== selectedTeam && msg.server_timestamp && msg.client_timestamp && msg.team_name) {
+            if (msg.team_index !== selectedTeamRef.current && msg.server_timestamp && msg.client_timestamp && msg.team_name) {
               try {
                 const serverTime = new Date(msg.server_timestamp).getTime();
                 const echoedClientTime = new Date(msg.client_timestamp).getTime();
-                const originalClientTime = lastBuzzAttemptRef.current.get(selectedTeam);
+                const originalClientTime = lastBuzzAttemptRef.current.get(selectedTeamRef.current);
                 
                 if (originalClientTime) {
                   // Calculate time difference with clock skew compensation
@@ -207,7 +212,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({
             }
             
             // Clear the stored timestamp for this team
-            lastBuzzAttemptRef.current.delete(selectedTeam);
+            lastBuzzAttemptRef.current.delete(selectedTeamRef.current);
             break;
 
           case "BuzzReleased":
@@ -369,6 +374,8 @@ case "TeamRemoved":
     }
 
     // Fallback to HTTP (HTTP won't get timing feedback)
+    if (!sessionId) return;
+
     fetch(`${API_URL}/session/${sessionId}/buzz/${teamIndex}`, {
       method: "POST",
     })
