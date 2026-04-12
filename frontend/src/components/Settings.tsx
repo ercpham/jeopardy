@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { useSettings } from "../context/SettingsContext";
+import { useAppStore } from "../store/useAppStore";
 import { Settings as SettingsIcon, X } from "lucide-react";
 import "../styles/Settings.css";
 
 const Settings: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { darkMode, setDarkMode, timerEnabled, setTimerEnabled } = useSettings();
+  const darkMode = useAppStore(state => state.darkMode);
+  const setDarkMode = useAppStore(state => state.setDarkMode);
+  const timerEnabled = useAppStore(state => state.timerEnabled);
+  const setTimerEnabled = useAppStore(state => state.setTimerEnabled);
 
   const toggleModal = () => setIsOpen((prev) => !prev);
 
@@ -48,7 +51,7 @@ const Settings: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={darkMode}
-                    onChange={() => setDarkMode((prev) => !prev)}
+                    onChange={() => setDarkMode(!darkMode)}
                   />
                   <span className="toggle-slider"></span>
                 </label>
@@ -62,7 +65,7 @@ const Settings: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={timerEnabled}
-                    onChange={() => setTimerEnabled((prev) => !prev)}
+                    onChange={() => setTimerEnabled(!timerEnabled)}
                   />
                   <span className="toggle-slider"></span>
                 </label>

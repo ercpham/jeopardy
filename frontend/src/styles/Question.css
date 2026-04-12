@@ -110,9 +110,9 @@
 }
 
 .timer-display.timer-warning {
-  background-color: #eab308;
-  color: #ffffff;
-  border-color: #eab308;
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  border-color: var(--warning-bg);
 }
 
 .timer-display.timer-critical {

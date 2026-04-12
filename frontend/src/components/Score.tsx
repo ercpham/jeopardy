@@ -12,8 +12,8 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Team } from "../context/TeamContext";
-import { useBoard } from "../context/BoardContext";
+import { Team } from "../types/bindings/Team";
+import { useAppStore } from "../store/useAppStore";
 import { Plus, Minus, X } from "lucide-react";
 import "../styles/Score.css";
 
@@ -25,7 +25,7 @@ const Score: React.FC<{
   removeTeam?: () => void;
 }> = ({ team, controls, modifyTeam, managingTeams = false, removeTeam }) => {
   const [inputValue, setInputValue] = useState<number>(0);
-  const { targetScore } = useBoard(); // Access targetScore from context
+  const targetScore = useAppStore(state => state.targetScore);
   const [isEditingName, setIsEditingName] = useState(false); // Track if editing team name
   const [teamName, setTeamName] = useState(team.team_name); // Local state for team name
 

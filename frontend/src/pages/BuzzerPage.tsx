@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../styles/BuzzerPage.css";
-import { Team, useTeam } from "../context/TeamContext";
+import { useAppStore } from "../store/useAppStore";
+import { Team } from "../types/bindings/Team";
 import BuzzFeedback from "../components/BuzzFeedback";
 
 interface BuzzerPageProps {
@@ -9,7 +10,10 @@ interface BuzzerPageProps {
 }
 
 const BuzzerPage: React.FC<BuzzerPageProps> = ({ buzzIn, teams }) => {
-  const {selectedTeam, setSelectedTeam, buzzLock, buzzFeedback } = useTeam();
+  const selectedTeam = useAppStore(state => state.selectedTeam);
+  const setSelectedTeam = useAppStore(state => state.setSelectedTeam);
+  const buzzLock = useAppStore(state => state.buzzLock);
+  const buzzFeedback = useAppStore(state => state.buzzFeedback);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const [isPressed, setIsPressed] = useState(false);
   const touchStartRef = useRef<number>(0);

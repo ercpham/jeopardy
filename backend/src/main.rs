@@ -3,7 +3,8 @@
 //! shared state, CORS, and a background session cleanup task.
 
 mod models;
-mod routes;
+mod handlers;
+mod services;
 mod utils;
 
 use axum::Router;
@@ -14,10 +15,9 @@ use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::models::AppState;
-use crate::routes::{
-    close_session, get_session_id, get_session_team_info, modify_session_team_info,
-    release_buzz_lock, set_buzz_lock_owned, start_session, ws_handler,
-};
+use crate::handlers::session::{start_session, get_session_id, close_session};
+use crate::handlers::team::{get_session_team_info, modify_session_team_info, release_buzz_lock, set_buzz_lock_owned};
+use crate::handlers::ws::ws_handler;
 use crate::utils::cleanup_sessions;
 
 #[tokio::main]

@@ -29,7 +29,7 @@
 
 .scorecard.active {
   transform: scale(1.05);
-  box-shadow: #005ec248 0px -2px 4px 4px;
+  box-shadow: var(--action-shadow) 0px -2px 4px 4px;
 }
 
 .scorecard.buzzed {

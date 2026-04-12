@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSession } from "../context/SessionContext";
+import { useAppStore } from "../store/useAppStore";
 import {
   Upload,
   RotateCcw,
@@ -54,7 +54,7 @@ const Menu: React.FC<MenuProps> = ({
 }) => {
   const [joinSessionId, setJoinSessionId] = useState("");
   const [copyMessageVisible, setCopyMessageVisible] = useState(false);
-  const { sessionLoading } = useSession();
+  const sessionLoading = useAppStore(state => state.sessionLoading);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target;

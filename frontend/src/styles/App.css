@@ -18,6 +18,9 @@
   --action-color: #005ec2;
   --action-hover: #004bb0;
   --action-text: #ffffff;
+  --action-shadow: rgba(0, 94, 194, 0.28);
+  --warning-bg: #eab308;
+  --warning-text: #ffffff;
   --danger-hover: rgba(255, 77, 77, 0.15);
   --fs-xs: 1.8rem;
   --fs-sm: 2.0rem;
@@ -43,6 +46,9 @@
   --action-color: #3b82f6;
   --action-hover: #2563eb;
   --action-text: #ffffff;
+  --action-shadow: rgba(59, 130, 246, 0.3);
+  --warning-bg: #d97706;
+  --warning-text: #ffffff;
   --danger-hover: rgba(239, 68, 68, 0.2);
 }
 

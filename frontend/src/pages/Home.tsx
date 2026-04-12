@@ -1,6 +1,6 @@
 import React from "react";
 import Board from "../components/Board";
-import { useQuestions } from "../context/QuestionsContext";
+import { useAppStore } from "../store/useAppStore";
 
 /**
  * Home page component that displays the main board of questions.
@@ -18,7 +18,7 @@ const Home: React.FC<{ triggerAnimation: boolean; boardKey: number }> = ({
   triggerAnimation,
   boardKey,
 }) => {
-  const { questions } = useQuestions();
+  const questions = useAppStore(state => state.questions);
 
   return (
     <div>

@@ -36,7 +36,7 @@
 }
 
 .board-button.recentlyClicked {
-  border: 2px solid #005ec250;
+  border: 2px solid var(--action-shadow);
   color: var(--text-color);
 }
 
@@ -52,7 +52,7 @@
 
   50% {
     transform: scale(1.2);
-    background-color: #f1f1f1;
+    background-color: var(--button-hover);
   }
 
   100% {

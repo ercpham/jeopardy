@@ -102,13 +102,13 @@
 }
 
 .menu li:hover {
-  color: #005ec2;
+  color: var(--action-color);
   background-color: var(--button-hover);
   transform: translateX(2px);
 }
 
 .menu li:active {
-  color: #003c7c;
+  color: var(--action-hover);
   transform: translateX(0);
 }
 
