@@ -17,10 +17,16 @@ use tokio::time::{timeout, Duration};
 /// Broadcasts a server message to all WebSocket clients in a session.
 /// Removes clients whose send channel has been closed.
 async fn broadcast(state: &AppState, session_id: &str, msg: &WsServerMsg) {
-    let payload = serde_json::to_string(msg).unwrap_or_default();
-    let mut clients = state.ws_clients.write().await;
-    if let Some(senders) = clients.get_mut(session_id) {
-        senders.retain(|tx| tx.send(payload.clone()).is_ok());
+    match serde_json::to_string(msg) {
+        Ok(payload) => {
+            let mut clients = state.ws_clients.write().await;
+            if let Some(senders) = clients.get_mut(session_id) {
+                senders.retain(|tx| tx.send(payload.clone()).is_ok());
+            }
+        }
+        Err(err) => {
+            eprintln!("Failed to serialize WS server msg for broadcast: {}", err);
+        }
     }
 }
 
@@ -57,9 +63,16 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
                 let msg = WsServerMsg::FullState {
                     session: session.clone(),
                 };
-                let payload = serde_json::to_string(&msg).unwrap();
-                if sender.send(Message::Text(payload)).await.is_err() {
-                    return;
+                match serde_json::to_string(&msg) {
+                    Ok(payload) => {
+                        if sender.send(Message::Text(payload)).await.is_err() {
+                            return;
+                        }
+                    }
+                    Err(err) => {
+                        eprintln!("Failed to serialize FullState: {}", err);
+                        return;
+                    }
                 }
             }
             None => return,
@@ -75,11 +88,27 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
             .push(tx.clone());
     }
 
-    // Forward outgoing messages from the channel to the WebSocket
+    // Forward outgoing messages from the channel to the WebSocket and send periodic Ping frames.
     let mut send_task = tokio::spawn(async move {
-        while let Some(msg) = rx.recv().await {
-            if sender.send(Message::Text(msg)).await.is_err() {
-                break;
+        let mut ping_interval = tokio::time::interval(Duration::from_secs(30));
+        loop {
+            tokio::select! {
+                biased;
+                msg = rx.recv() => {
+                    match msg {
+                        Some(text) => {
+                            if sender.send(Message::Text(text)).await.is_err() {
+                                break;
+                            }
+                        }
+                        None => break,
+                    }
+                }
+                _ = ping_interval.tick() => {
+                    if sender.send(Message::Ping(vec![])).await.is_err() {
+                        break;
+                    }
+                }
             }
         }
     });
@@ -87,7 +116,6 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
     // Process incoming messages with heartbeat
     let recv_state = state.clone();
     let recv_session_id = session_id.clone();
-    let recv_tx = tx.clone();
     let mut recv_task = tokio::spawn(async move {
         loop {
             match timeout(Duration::from_secs(30), receiver.next()).await {
@@ -103,10 +131,9 @@ async fn handle_ws_connection(state: Arc<AppState>, session_id: String, socket: 
                 }
                 Ok(Some(Err(_))) => break,
                 Err(_) => {
-                    // Timeout — send ping to keep connection alive
-                    if recv_tx.send(r#"{"type":"ping"}"#.to_string()).is_err() {
-                        break;
-                    }
+                    // Timeout waiting for client activity — no-op here.
+                    // Periodic Ping frames are sent from the send task.
+                    continue;
                 }
                 _ => {}
             }
@@ -139,12 +166,19 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
     let mut session = session_mutex.lock().await;
 
     match msg {
-        WsClientMsg::BuzzIn { team_index } => {
+        WsClientMsg::BuzzIn { team_index, client_timestamp } => {
             if !session.buzz_lock {
                 let is_home = session.current_page == "home";
                 if let Some(team) = session.teams.get_mut(team_index) {
                     if !team.has_buzzed {
+                        let server_time = Utc::now();
+                        let team_name = team.team_name.clone();
+                        
+                        // Parse client timestamp, ignore if malformed (show no feedback)
+                        let _ = chrono::DateTime::parse_from_rfc3339(&client_timestamp);
+                        
                         team.buzz_lock_owned = true;
+                        team.last_buzz_attempt = Some(server_time);
                         if !is_home {
                             team.has_buzzed = true;
                         }
@@ -152,7 +186,12 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
                         session.last_modified = Utc::now();
                         drop(session);
                         drop(sessions);
-                        broadcast(state, session_id, &WsServerMsg::BuzzLocked { team_index }).await;
+                        broadcast(state, session_id, &WsServerMsg::BuzzLocked { 
+                            team_index,
+                            server_timestamp: server_time,
+                            client_timestamp,
+                            team_name,
+                        }).await;
                     }
                 }
             }
@@ -226,12 +265,13 @@ session.last_modified = Utc::now();
           }
           WsClientMsg::AddTeam => {
               let new_team_index = session.teams.len();
-              let new_team = Team {
-                  team_name: format!("Team {}", new_team_index + 1),
-                  score: 0,
-                  buzz_lock_owned: false,
-                  has_buzzed: false,
-              };
+let new_team = Team {
+                   team_name: format!("Team {}", new_team_index + 1),
+                   score: 0,
+                   buzz_lock_owned: false,
+                   has_buzzed: false,
+                   last_buzz_attempt: None,
+               };
               session.teams.push(new_team.clone());
               session.last_modified = Utc::now();
               drop(session);
@@ -258,26 +298,35 @@ session.last_modified = Utc::now();
               drop(sessions);
               broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
           }
-          WsClientMsg::SetPage { page } => {
-              session.current_page = page;
-              session.last_modified = Utc::now();
-              if session.current_page == "home" {
-                  session.buzz_lock = false;
-                  for team in &mut session.teams {
-                      team.buzz_lock_owned = false;
-                      team.has_buzzed = false;
-                  }
-                  drop(session);
-                  drop(sessions);
-                  broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
-              } else {
-                  let page = session.current_page.clone();
-                  drop(session);
-                  drop(sessions);
-                  broadcast(state, session_id, &WsServerMsg::PageUpdate { page }).await;
-              }
-          }
-     }
+WsClientMsg::SetPage { page } => {
+               session.current_page = page;
+               session.last_modified = Utc::now();
+               if session.current_page == "home" {
+                   session.buzz_lock = false;
+                   for team in &mut session.teams {
+                       team.buzz_lock_owned = false;
+                       team.has_buzzed = false;
+                   }
+                   drop(session);
+                   drop(sessions);
+                   broadcast(state, session_id, &WsServerMsg::HasBuzzedReset).await;
+               } else {
+                   let page = session.current_page.clone();
+                   drop(session);
+                   drop(sessions);
+                   broadcast(state, session_id, &WsServerMsg::PageUpdate { page }).await;
+               }
+           }
+           WsClientMsg::Ping { client_timestamp } => {
+               let server_time = Utc::now();
+               drop(session);
+               drop(sessions);
+               broadcast(state, session_id, &WsServerMsg::Pong {
+                   server_timestamp: server_time,
+                   client_timestamp,
+               }).await;
+           }
+      }
 }
 
 // ──────────────────────────────────────────────
@@ -301,7 +350,10 @@ async fn apply_buzz_lock(
     if team.has_buzzed {
         return None;
     }
+    let server_time = Utc::now();
+    let team_name = team.team_name.clone();
     team.buzz_lock_owned = true;
+    team.last_buzz_attempt = Some(server_time);
     if !is_home {
         team.has_buzzed = true;
     }
@@ -309,7 +361,14 @@ async fn apply_buzz_lock(
     session.last_modified = Utc::now();
     drop(session);
     drop(sessions);
-    broadcast(state, session_id, &WsServerMsg::BuzzLocked { team_index }).await;
+    // For HTTP, use current time as client timestamp placeholder
+    let client_timestamp = server_time.to_rfc3339();
+    broadcast(state, session_id, &WsServerMsg::BuzzLocked { 
+        team_index,
+        server_timestamp: server_time,
+        client_timestamp,
+        team_name,
+    }).await;
     Some(())
 }
 
@@ -358,18 +417,21 @@ pub async fn start_session(State(state): State<Arc<AppState>>) -> Json<String> {
                 score: 0,
                 buzz_lock_owned: false,
                 has_buzzed: false,
+                last_buzz_attempt: None,
             },
             Team {
                 team_name: "Team 2".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
                 has_buzzed: false,
+                last_buzz_attempt: None,
             },
             Team {
                 team_name: "Team 3".to_string(),
                 score: 0,
                 buzz_lock_owned: false,
                 has_buzzed: false,
+                last_buzz_attempt: None,
             },
         ],
     };

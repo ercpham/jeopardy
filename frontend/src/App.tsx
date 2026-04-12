@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import QuestionPage from "./pages/QuestionPage";
 import BuzzerPage from "./pages/BuzzerPage";
 import ScoreContainer from "./components/ScoreContainer";
+import ConnectionIndicator from "./components/ConnectionIndicator";
 import { useTeam } from "./context/TeamContext";
 import { useQuestions } from "./context/QuestionsContext";
 import { useBoard } from "./context/BoardContext";
@@ -37,6 +38,7 @@ const App: React.FC = () => {
   const [player, setPlayer] = useState(false);
   const [managingTeams, setManagingTeams] = useState(false);
   const [mobileSessionId, setMobileSessionId] = useState("");
+  const [mobileSessionError, setMobileSessionError] = useState("");
 
   useEffect(() => {
     const onHome = !player && location.pathname === "/";
@@ -64,10 +66,15 @@ const App: React.FC = () => {
     setManagingTeams((prev) => !prev);
   };
 
-  const handleJoinSession = (sessionId: string) => {
-    setPlayer(true);
-    hasPlayedBuzzerRef.current = true;
-    joinSession(sessionId);
+  const handleJoinSession = async (sessionId: string) => {
+    const success = await joinSession(sessionId);
+    if (success) {
+      setPlayer(true);
+      hasPlayedBuzzerRef.current = true;
+    } else {
+      setMobileSessionError("Invalid session code. Please try again.");
+    }
+    return success;
   };
 
   const handleLeaveSession = () => {
@@ -77,9 +84,10 @@ const App: React.FC = () => {
     setMobileSessionId("");
   };
 
-  const handleMobileJoin = () => {
+  const handleMobileJoin = async () => {
+    setMobileSessionError("");
     if (mobileSessionId.trim()) {
-      handleJoinSession(mobileSessionId.trim());
+      await handleJoinSession(mobileSessionId.trim());
     }
   };
 
@@ -90,9 +98,9 @@ const App: React.FC = () => {
 
   const resetTeams = () => {
     const defaultTeams = [
-      { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false },
-      { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false },
-      { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false },
+      { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
+      { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
+      { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
     ];
     defaultTeams.forEach((team, index) => {
       modifyTeam(team, index);
@@ -147,6 +155,7 @@ const App: React.FC = () => {
             <Unlock size={20} />
           </button>
         )}
+        <ConnectionIndicator />
         {player && (
           <BuzzerPage buzzIn={buzzIn} teams={teams} />
         )}
@@ -165,6 +174,7 @@ const App: React.FC = () => {
                 onChange={(e) => {
                   const input = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
                   setMobileSessionId(input);
+                  setMobileSessionError("");
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleMobileJoin();
@@ -172,6 +182,9 @@ const App: React.FC = () => {
                 maxLength={4}
               />
               <button onClick={handleMobileJoin}>Join Session</button>
+              {mobileSessionError && (
+                <div className="mobile-session-error">{mobileSessionError}</div>
+              )}
             </div>
           )}
         </div>

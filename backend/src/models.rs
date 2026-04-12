@@ -15,6 +15,8 @@ pub struct Team {
     pub score: i32,
     pub buzz_lock_owned: bool,
     pub has_buzzed: bool,
+    #[serde(default)]
+    pub last_buzz_attempt: Option<DateTime<Utc>>,
 }
 
 /// Represents a session in the Bible Challenge.
@@ -33,36 +35,83 @@ pub struct Session {
 #[derive(Deserialize)]
 #[serde(tag = "type")]
 pub enum WsClientMsg {
-    BuzzIn { team_index: usize },
+    BuzzIn {
+        team_index: usize,
+        client_timestamp: String,
+    },
     ReleaseBuzz,
     LockBuzzers,
-    UpdateScore { team_index: usize, score: i32 },
-    UpdateTeamName { team_index: usize, name: String },
-    UpdateDarkMode { enabled: bool },
-    UpdateTimerEnabled { enabled: bool },
+    UpdateScore {
+        team_index: usize,
+        score: i32,
+    },
+    UpdateTeamName {
+        team_index: usize,
+        name: String,
+    },
+    UpdateDarkMode {
+        enabled: bool,
+    },
+    UpdateTimerEnabled {
+        enabled: bool,
+    },
     AddTeam,
-    RemoveTeam { team_index: usize },
+    RemoveTeam {
+        team_index: usize,
+    },
     ResetHasBuzzed,
-    SetPage { page: String },
+    SetPage {
+        page: String,
+    },
+    Ping {
+        client_timestamp: String,
+    },
 }
 
 /// Messages sent from server to client over WebSocket.
 #[derive(Serialize, Clone)]
 #[serde(tag = "type")]
 pub enum WsServerMsg {
-    FullState { session: Session },
-    BuzzLocked { team_index: usize },
+    FullState {
+        session: Session,
+    },
+    BuzzLocked {
+        team_index: usize,
+        server_timestamp: DateTime<Utc>,
+        client_timestamp: String,
+        team_name: String,
+    },
     BuzzersLocked,
     BuzzReleased,
-    ScoreUpdate { team_index: usize, score: i32 },
-    TeamNameUpdate { team_index: usize, name: String },
-    DarkModeUpdate { enabled: bool },
-    TimerEnabledUpdate { enabled: bool },
-    TeamAdded { team: Team },
-    TeamRemoved { team_index: usize },
+    ScoreUpdate {
+        team_index: usize,
+        score: i32,
+    },
+    TeamNameUpdate {
+        team_index: usize,
+        name: String,
+    },
+    DarkModeUpdate {
+        enabled: bool,
+    },
+    TimerEnabledUpdate {
+        enabled: bool,
+    },
+    TeamAdded {
+        team: Team,
+    },
+    TeamRemoved {
+        team_index: usize,
+    },
     HasBuzzedReset,
-    PageUpdate { page: String },
+    PageUpdate {
+        page: String,
+    },
     SessionClosed,
+    Pong {
+        server_timestamp: DateTime<Utc>,
+        client_timestamp: String,
+    },
 }
 
 /// Shared application state injected into route handlers via Axum's State extractor.

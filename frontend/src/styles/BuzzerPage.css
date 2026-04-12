@@ -7,6 +7,8 @@
   height: 70vh;
   width: 100vw;
   position: relative;
+  overflow: hidden;
+  touch-action: none;
 }
 
 .team-selector {
@@ -45,6 +47,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
   animation: pulse-shadow 1.5s infinite ease-in-out;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .buzzer-button.lock_owned {
@@ -61,7 +69,8 @@
   background-color: var(--action-hover);
 }
 
-.buzzer-button:active {
+.buzzer-button:active,
+.buzzer-button.pressed {
   transform: scale(0.95);
   background-color: var(--action-hover);
 }
