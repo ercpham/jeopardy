@@ -1,5 +1,5 @@
 import React from 'react';
-import './BuzzFeedback.css';
+import '../styles/BuzzFeedback.css';
 
 interface Props {
   visible: boolean;
