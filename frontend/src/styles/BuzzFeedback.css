@@ -17,7 +17,7 @@
   animation: buzzFeedbackFade 3s forwards;
   pointer-events: none;
   max-width: 80%;
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 @keyframes buzzFeedbackFade {
