@@ -167,6 +167,7 @@ async fn handle_ws_message(state: &AppState, session_id: &str, msg: WsClientMsg)
             session.buzz_lock = false;
             for team in &mut session.teams {
                 team.buzz_lock_owned = false;
+                team.has_buzzed = false;
             }
             session.last_modified = Utc::now();
             drop(session);

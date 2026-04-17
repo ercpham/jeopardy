@@ -19,10 +19,19 @@ export const defaultTeams: Team[] = [
 
 const savedDarkMode = localStorage.getItem("darkMode");
 const savedTimerEnabled = localStorage.getItem("timerEnabled");
+const savedFontScale = localStorage.getItem("fontScale");
+
+if (savedDarkMode === "true") {
+  document.documentElement.classList.add("dark-mode");
+}
+
+const initialFontScale = savedFontScale ? parseFloat(savedFontScale) : 1;
+document.documentElement.style.setProperty("--font-scale", String(initialFontScale));
 
 interface AppState {
   // Session / Connection State
   sessionId: string | null;
+  hostToken: string | null;
   sessionLoading: boolean;
   connectionState: ConnectionState;
   pingLatency: number | null;
@@ -31,6 +40,7 @@ interface AppState {
   // Settings
   darkMode: boolean;
   timerEnabled: boolean;
+  fontScale: number;
 
   // Questions / Board State
   questions: Question[];
@@ -50,12 +60,14 @@ interface AppState {
 
   // Actions
   setSessionId: (id: string | null) => void;
+  setHostToken: (token: string | null) => void;
   setSessionLoading: (loading: boolean) => void;
   setConnectionState: (state: ConnectionState) => void;
   setPingData: (latency: number, time: number) => void;
   
   setDarkMode: (value: boolean) => void;
   setTimerEnabled: (value: boolean) => void;
+  setFontScale: (value: number) => void;
   
   setQuestions: (questions: Question[]) => void;
   revealAnswer: (id: string) => void;
@@ -80,6 +92,7 @@ interface AppState {
 
 export const useAppStore = create<AppState>()((set, get) => ({
   sessionId: null,
+  hostToken: null,
   sessionLoading: false,
   connectionState: 'disconnected',
   pingLatency: null,
@@ -87,6 +100,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
 
   darkMode: savedDarkMode ? JSON.parse(savedDarkMode) : false,
   timerEnabled: savedTimerEnabled ? JSON.parse(savedTimerEnabled) : false,
+  fontScale: initialFontScale,
 
   questions: questionsData as Question[],
   clickedCells: new Set(),
@@ -103,6 +117,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
   hasPlayedBuzzer: false,
 
   setSessionId: (id) => set({ sessionId: id }),
+  setHostToken: (token) => set({ hostToken: token }),
   setSessionLoading: (loading) => set({ sessionLoading: loading }),
   setConnectionState: (state) => set({ connectionState: state }),
   setPingData: (latency, time) => set({ pingLatency: latency, lastPingTime: time }),
@@ -119,6 +134,11 @@ export const useAppStore = create<AppState>()((set, get) => ({
   setTimerEnabled: (value) => {
     localStorage.setItem("timerEnabled", JSON.stringify(value));
     set({ timerEnabled: value });
+  },
+  setFontScale: (value) => {
+    localStorage.setItem("fontScale", String(value));
+    document.documentElement.style.setProperty("--font-scale", String(value));
+    set({ fontScale: value });
   },
 
   setQuestions: (questions) => set({ questions }),

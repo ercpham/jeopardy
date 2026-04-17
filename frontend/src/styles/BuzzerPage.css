@@ -1,3 +1,4 @@
+/* ─── Full-screen Buzzer Page ────────────────────────────────────────────── */
 .buzzer-page {
   display: flex;
   flex-direction: column;
@@ -9,90 +10,131 @@
   position: relative;
   overflow: hidden;
   touch-action: none;
-  padding-top: env(safe-area-inset-top);
+  background: var(--bg-color);
+
+  /* Subtle radial glow in the center */
+  background-image: radial-gradient(ellipse 70% 50% at 50% 65%,
+    var(--accent-subtle) 0%, transparent 70%);
 }
 
+/* ─── Team Selector ──────────────────────────────────────────────────────── */
 .team-selector {
   position: absolute;
   display: flex;
   justify-content: center;
   align-items: center;
-  top: max(1.5rem, env(safe-area-inset-top, 1.5rem));
+  top: max(1.25rem, env(safe-area-inset-top, 1.25rem));
   left: 50%;
   transform: translateX(-50%);
-  gap: 10px;
+  gap: 8px;
+  z-index: 10;
 }
 
 .team-selector select {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  box-shadow: none;
-  border-radius: 8px;
+  padding: 0.55rem 1.2rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
   cursor: pointer;
-  background-color: var(--button-bg);
+  background-color: var(--surface-1);
   color: var(--text-color);
+  font-family: inherit;
   font-size: var(--fs-xs);
-  font-weight: 600;
+  font-weight: 700;
   appearance: none;
   -webkit-appearance: none;
   text-align: center;
+  box-shadow: var(--shadow-sm);
+  letter-spacing: 0.01em;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
+.team-selector select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+  outline: none;
+}
+
+/* ─── Buzzer Button ──────────────────────────────────────────────────────── */
 .buzzer-button {
   width: 18rem;
   height: 18rem;
   border-radius: 50%;
-  background-color: var(--action-color);
+  background: conic-gradient(from 180deg, var(--accent), var(--accent-hover), var(--accent));
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
-  animation: pulse-shadow 1.5s infinite ease-in-out;
+  box-shadow: 0 8px 40px var(--accent-glow),
+              0 2px 8px rgba(0,0,0,0.2),
+              inset 0 2px 4px rgba(255,255,255,0.15);
+  transition: transform var(--transition-fast),
+              box-shadow var(--transition-fast),
+              filter var(--transition-fast);
+  animation: buzzerPulse 2.2s ease-in-out infinite;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  position: relative;
+  overflow: hidden;
 }
 
-.buzzer-button.lock_owned {
-  animation: none;
-  box-shadow: 0 0px 12px 8px rgba(0, 0, 0, 0.15);
+/* Inner glow ring */
+.buzzer-button::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 65%);
+  pointer-events: none;
 }
 
-.buzzer-button.lock_win {
-  box-shadow: 0 0px 12px 8px rgba(0, 0, 0, 0.15);
-}
-
-.buzzer-button:hover {
-  transform: scale(1.1);
-  background-color: var(--action-hover);
-}
-
-.buzzer-button:active,
-.buzzer-button.pressed {
-  transform: scale(0.95);
-  background-color: var(--action-hover);
-}
-
-.buzzer-button.lock_owned:hover {
-  transform: none;
-  cursor: default;
-}
-
-.buzzer-button.lock_owned:active {
-  transform: none;
-}
-
-@keyframes pulse-shadow {
-  0% {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+@keyframes buzzerPulse {
+  0%, 100% {
+    box-shadow: 0 8px 40px var(--accent-glow),
+                0 2px 8px rgba(0,0,0,0.2),
+                inset 0 2px 4px rgba(255,255,255,0.15);
   }
   50% {
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 12px 60px var(--accent-glow),
+                0 4px 16px rgba(0,0,0,0.25),
+                inset 0 2px 4px rgba(255,255,255,0.2);
   }
-  100% {
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  }
+}
+
+/* Hover */
+.buzzer-button:hover {
+  transform: scale(1.06);
+  filter: brightness(1.08);
+  box-shadow: 0 16px 60px var(--accent-glow), 0 4px 16px rgba(0,0,0,0.3);
+}
+
+/* Pressed */
+.buzzer-button:active,
+.buzzer-button.pressed {
+  transform: scale(0.94);
+  filter: brightness(0.95);
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
+/* Locked — another team buzzed first */
+.buzzer-button.lock_owned {
+  animation: none;
+  background: conic-gradient(from 180deg, var(--surface-3), var(--border-strong), var(--surface-3));
+  box-shadow: var(--shadow-sm);
+  cursor: not-allowed;
+}
+
+.buzzer-button.lock_owned:hover { transform: none; filter: none; }
+.buzzer-button.lock_owned:active { transform: none; }
+.buzzer-button.lock_owned::after { display: none; }
+
+/* Winner — this team buzzed first */
+.buzzer-button.lock_win {
+  animation: winPulse 1.2s ease-in-out infinite;
+  background: conic-gradient(from 180deg, var(--success), #059669, var(--success));
+  box-shadow: 0 8px 40px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes winPulse {
+  0%, 100% { box-shadow: 0 8px 40px rgba(16, 185, 129, 0.4); }
+  50%       { box-shadow: 0 12px 60px rgba(16, 185, 129, 0.65); }
 }

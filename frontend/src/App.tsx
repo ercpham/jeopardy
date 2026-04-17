@@ -25,7 +25,8 @@ import {
   buzzIn, 
   releaseBuzzLock, 
   addTeam, 
-  removeTeam 
+  removeTeam,
+  leaveSession as apiLeaveSession
 } from "./services/api";
 import { wsService } from "./services/WebSocketService";
 
@@ -84,7 +85,7 @@ const App: React.FC = () => {
   const handleLeaveSession = () => {
     setPlayer(false);
     useAppStore.getState().setHasPlayedBuzzer(false);
-    closeSession();
+    apiLeaveSession();
     setMobileSessionId("");
   };
 

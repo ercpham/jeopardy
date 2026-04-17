@@ -9,9 +9,10 @@ export const startSession = async () => {
   store.setSessionLoading(true);
   try {
     const response = await fetch(`${API_URL}/session/start`, { method: "POST" });
-    const id = await response.json();
-    store.setSessionId(id);
-    wsService.connect(id);
+    const data = await response.json();
+    store.setSessionId(data.session_id);
+    store.setHostToken(data.host_token);
+    wsService.connect(data.session_id);
   } catch (error) {
     console.error("Error starting session:", error);
   } finally {
@@ -22,12 +23,23 @@ export const startSession = async () => {
 export const closeSession = async () => {
   const store = useAppStore.getState();
   const sessionId = store.sessionId;
+  const hostToken = store.hostToken;
   if (!sessionId) return;
   try {
-    await fetch(`${API_URL}/session/${sessionId}/close`, { method: "POST" });
+    const url = hostToken 
+      ? `${API_URL}/session/${sessionId}/close?token=${hostToken}`
+      : `${API_URL}/session/${sessionId}/close`;
+    await fetch(url, { method: "POST" });
   } catch (error) {
     console.error("Error closing session:", error);
   }
+  store.setSessionId(null);
+  store.setHostToken(null);
+  wsService.disconnect();
+};
+
+export const leaveSession = () => {
+  const store = useAppStore.getState();
   store.setSessionId(null);
   wsService.disconnect();
 };
@@ -56,11 +68,11 @@ export const joinSession = async (id: string): Promise<boolean> => {
 export const releaseBuzzLock = () => {
   const store = useAppStore.getState();
   const sessionId = store.sessionId;
-  if (!sessionId) {
-    store.setBuzzLock(false);
-    store.setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false })));
-    return;
-  }
+  
+  store.setBuzzLock(false);
+  store.setTeams((prev) => prev.map((team) => ({ ...team, buzz_lock_owned: false, has_buzzed: false })));
+
+  if (!sessionId) return;
 
   if (!wsService.send({ type: "ReleaseBuzz" })) {
     fetch(`${API_URL}/session/${sessionId}/buzz/release`, { method: "POST" }).catch(() => {});
@@ -89,8 +101,11 @@ export const buzzIn = (teamIndex: number) => {
 
   if (buzzLock) return;
 
-  const clientTimestamp = new Date().toISOString();
-  wsService.lastBuzzAttempt.set(teamIndex, Date.now());
+  const clientSentTime = typeof wsService.getServerTime === "function" 
+    ? wsService.getServerTime() 
+    : Date.now();
+  const clientTimestamp = new Date(clientSentTime).toISOString();
+  wsService.lastBuzzAttempt.set(teamIndex, clientSentTime);
 
   if (wsService.send({ type: "BuzzIn", team_index: teamIndex, client_timestamp: clientTimestamp })) {
     store.setBuzzLock(true);
@@ -127,6 +142,7 @@ export const buzzIn = (teamIndex: number) => {
 
 export const lockBuzzers = () => {
   const store = useAppStore.getState();
+  store.setBuzzLock(true);
   if (store.sessionId) {
     wsService.send({ type: "LockBuzzers" });
   }
@@ -187,5 +203,22 @@ export const removeTeam = (teamIndex: number) => {
 
 export const resetBuzzedTeams = () => {
   const store = useAppStore.getState();
-  store.setTeams((prev) => prev.map((team) => ({ ...team, has_buzzed: false })));
+  const sessionId = store.sessionId;
+  if (!sessionId) {
+    store.setTeams((prev) => prev.map((team) => ({ ...team, has_buzzed: false })));
+    return;
+  }
+  wsService.send({ type: "ResetHasBuzzed" });
+};
+
+export const updateDarkMode = (enabled: boolean) => {
+  const store = useAppStore.getState();
+  store.setDarkMode(enabled);
+  wsService.send({ type: "UpdateDarkMode", enabled });
+};
+
+export const updateTimerEnabled = (enabled: boolean) => {
+  const store = useAppStore.getState();
+  store.setTimerEnabled(enabled);
+  wsService.send({ type: "UpdateTimerEnabled", enabled });
 };

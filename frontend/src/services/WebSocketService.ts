@@ -16,6 +16,11 @@ class WebSocketService {
   private intentionalClose = false;
   // We use this to reconcile the client-side clock with the server
   public lastBuzzAttempt: Map<number, number> = new Map();
+  public clockOffset: number = 0;
+
+  public getServerTime(): number {
+    return Date.now() + this.clockOffset;
+  }
 
   public connect(sessionId: string) {
     this.cleanup();
@@ -105,7 +110,7 @@ class WebSocketService {
         case "FullState":
           store.applyFullSessionState(msg.session);
           break;
-        case "Pong":
+        case "Pong": {
           const pongTime = Date.now();
           const clientSentTime = new Date(msg.client_timestamp).getTime();
           const roundTrip = pongTime - clientSentTime;
@@ -115,7 +120,11 @@ class WebSocketService {
           } else {
             store.setConnectionState('connected');
           }
+          // Use server timestamp to sync clocks
+          const serverMs = new Date(msg.server_timestamp).getTime();
+          this.clockOffset = serverMs - clientSentTime - (roundTrip / 2);
           break;
+        }
         case "BuzzLocked":
           store.setBuzzLock(true);
           store.setTeams(prev => prev.map((t, i) => ({
@@ -127,15 +136,14 @@ class WebSocketService {
           if (msg.team_index !== store.selectedTeam) {
             try {
               const serverTime = new Date(msg.server_timestamp).getTime();
-              const echoedClientTime = new Date(msg.client_timestamp).getTime();
               const originalClientTime = this.lastBuzzAttempt.get(store.selectedTeam);
 
               if (originalClientTime) {
-                const roundTripTime = serverTime - originalClientTime;
-                const clockSkew = echoedClientTime - (originalClientTime + roundTripTime / 2);
-                const timeDiff = serverTime - clockSkew - originalClientTime;
+                // Normalize my local buzz time to server time
+                const myNormalizedTime = originalClientTime + this.clockOffset;
+                const timeDiff = serverTime - myNormalizedTime;
 
-                if (timeDiff >= -100 && timeDiff <= 2100) {
+                if (timeDiff >= -500 && timeDiff <= 5000) {
                   const displayDiff = Math.max(0, Math.round(timeDiff));
                   let message = `${msg.team_name} buzzed in ${displayDiff} ms before you!`;
                   if (displayDiff < 50) message = `${msg.team_name} buzzed just before you!`;
@@ -158,7 +166,7 @@ class WebSocketService {
           store.setTeams(prev => prev.map(t => ({
             ...t,
             buzz_lock_owned: false,
-            has_buzzed: store.currentPage === "home" ? false : t.has_buzzed
+            has_buzzed: false
           })));
           break;
         case "ScoreUpdate":
@@ -173,7 +181,6 @@ class WebSocketService {
           break;
         case "HasBuzzedReset":
           store.setBuzzLock(false);
-          store.setCurrentPage("home");
           store.setTeams(prev => prev.map(t => ({ ...t, buzz_lock_owned: false, has_buzzed: false })));
           break;
         case "PageUpdate":

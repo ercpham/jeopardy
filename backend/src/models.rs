@@ -37,6 +37,13 @@ pub struct Session {
     pub last_modified: DateTime<Utc>,
 }
 
+#[derive(Serialize, TS)]
+#[ts(export)]
+pub struct StartSessionResponse {
+    pub session_id: String,
+    pub host_token: String,
+}
+
 /// Messages sent from client to server over WebSocket.
 #[derive(Deserialize, TS)]
 #[serde(tag = "type")]
@@ -127,6 +134,7 @@ pub enum WsServerMsg {
 /// Shared application state injected into route handlers via Axum's State extractor.
 pub struct AppState {
     pub sessions: RwLock<HashMap<String, AsyncMutex<Session>>>,
+    pub host_tokens: RwLock<HashMap<String, String>>,
     pub ws_clients: RwLock<HashMap<String, Vec<tokio::sync::mpsc::UnboundedSender<String>>>>,
 }
 
@@ -134,6 +142,7 @@ impl AppState {
     pub fn new() -> Arc<Self> {
         Arc::new(Self {
             sessions: RwLock::new(HashMap::new()),
+            host_tokens: RwLock::new(HashMap::new()),
             ws_clients: RwLock::new(HashMap::new()),
         })
     }

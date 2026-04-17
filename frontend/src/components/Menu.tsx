@@ -160,13 +160,16 @@ const Menu: React.FC<MenuProps> = ({
         <div className="menu-overlay" onClick={handleOverlayClick}>
           <div className="menu">
             <div className="menu-header">
-              <BookOpen size={20} />
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <BookOpen size={18} />
+                <span className="menu-title">Bible Challenge</span>
+              </div>
               <button
                 className="menu-close"
                 onClick={closeMenu}
                 aria-label="Close Menu"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
             <ul>

@@ -51,6 +51,7 @@ pub async fn apply_buzz_release(state: &AppState, session_id: &str) -> bool {
     session.buzz_lock = false;
     for team in &mut session.teams {
         team.buzz_lock_owned = false;
+        team.has_buzzed = false;
     }
     session.last_modified = Utc::now();
     drop(session);
