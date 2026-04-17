@@ -7,33 +7,47 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{Mutex as AsyncMutex, RwLock};
+use ts_rs::TS;
 
 /// Represents a team in the Bible Challenge.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, TS)]
+#[ts(export)]
 pub struct Team {
     pub team_name: String,
     pub score: i32,
     pub buzz_lock_owned: bool,
     pub has_buzzed: bool,
+    #[ts(type = "string | null")]
     #[serde(default)]
     pub last_buzz_attempt: Option<DateTime<Utc>>,
 }
 
 /// Represents a session in the Bible Challenge.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, TS)]
+#[ts(export)]
 pub struct Session {
     pub teams: Vec<Team>,
     pub buzz_lock: bool,
     pub dark_mode: bool,
     pub timer_enabled: bool,
     pub current_page: String,
+    #[ts(type = "string")]
     pub created_at: DateTime<Utc>,
+    #[ts(type = "string")]
     pub last_modified: DateTime<Utc>,
 }
 
+#[derive(Serialize, TS)]
+#[ts(export)]
+pub struct StartSessionResponse {
+    pub session_id: String,
+    pub host_token: String,
+}
+
 /// Messages sent from client to server over WebSocket.
-#[derive(Deserialize)]
+#[derive(Deserialize, TS)]
 #[serde(tag = "type")]
+#[ts(export)]
 pub enum WsClientMsg {
     BuzzIn {
         team_index: usize,
@@ -69,14 +83,16 @@ pub enum WsClientMsg {
 }
 
 /// Messages sent from server to client over WebSocket.
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone, TS)]
 #[serde(tag = "type")]
+#[ts(export)]
 pub enum WsServerMsg {
     FullState {
         session: Session,
     },
     BuzzLocked {
         team_index: usize,
+        #[ts(type = "string")]
         server_timestamp: DateTime<Utc>,
         client_timestamp: String,
         team_name: String,
@@ -109,6 +125,7 @@ pub enum WsServerMsg {
     },
     SessionClosed,
     Pong {
+        #[ts(type = "string")]
         server_timestamp: DateTime<Utc>,
         client_timestamp: String,
     },
@@ -117,6 +134,7 @@ pub enum WsServerMsg {
 /// Shared application state injected into route handlers via Axum's State extractor.
 pub struct AppState {
     pub sessions: RwLock<HashMap<String, AsyncMutex<Session>>>,
+    pub host_tokens: RwLock<HashMap<String, String>>,
     pub ws_clients: RwLock<HashMap<String, Vec<tokio::sync::mpsc::UnboundedSender<String>>>>,
 }
 
@@ -124,6 +142,7 @@ impl AppState {
     pub fn new() -> Arc<Self> {
         Arc::new(Self {
             sessions: RwLock::new(HashMap::new()),
+            host_tokens: RwLock::new(HashMap::new()),
             ws_clients: RwLock::new(HashMap::new()),
         })
     }

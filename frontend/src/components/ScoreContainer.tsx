@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import Score from "./Score";
-import { Team, useTeam } from "../context/TeamContext";
+import { useAppStore } from "../store/useAppStore";
+import { Team } from "../types/bindings/Team";
 import "../styles/ScoreContainer.css";
 
 interface ScoreContainerProps {
@@ -22,7 +23,7 @@ const ScoreContainer: React.FC<ScoreContainerProps> = ({
   addTeam,
   removeTeam,
 }) => {
-  const { selectedTeam } = useTeam();
+  const selectedTeam = useAppStore(state => state.selectedTeam);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle mouse wheel for horizontal scrolling

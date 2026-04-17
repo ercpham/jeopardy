@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { useQuestions } from "../context/QuestionsContext";
-import { useTeam } from "../context/TeamContext";
+import { useAppStore } from "../store/useAppStore";
+import { lockBuzzers } from "../services/api";
 import Question from "../components/Question";
 
 /**
@@ -16,8 +16,9 @@ import Question from "../components/Question";
  */
 
 const QuestionPage: React.FC = () => {
-  const { questions, revealAnswer } = useQuestions();
-  const { buzzLock, lockBuzzers } = useTeam();
+  const questions = useAppStore(state => state.questions);
+  const revealAnswer = useAppStore(state => state.revealAnswer);
+  const buzzLock = useAppStore(state => state.buzzLock);
   const { id } = useParams<{ id: string }>();
   const question = questions.find((q) => q.id === id);
 

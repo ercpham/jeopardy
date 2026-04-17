@@ -14,22 +14,33 @@ import QuestionPage from "./pages/QuestionPage";
 import BuzzerPage from "./pages/BuzzerPage";
 import ScoreContainer from "./components/ScoreContainer";
 import ConnectionIndicator from "./components/ConnectionIndicator";
-import { useTeam } from "./context/TeamContext";
-import { useQuestions } from "./context/QuestionsContext";
-import { useBoard } from "./context/BoardContext";
-import { useSession } from "./context/SessionContext";
-import { usePage } from "./context/PageContext";
 import Menu from "./components/Menu";
 import Settings from "./components/Settings";
+import { useAppStore } from "./store/useAppStore";
+import { 
+  startSession, 
+  joinSession, 
+  closeSession, 
+  modifyTeam, 
+  buzzIn, 
+  releaseBuzzLock, 
+  addTeam, 
+  removeTeam,
+  leaveSession as apiLeaveSession
+} from "./services/api";
+import { wsService } from "./services/WebSocketService";
 
 const App: React.FC = () => {
-  const { teams, buzzLock, modifyTeam, buzzIn, releaseBuzzLock, hasPlayedBuzzerRef, loading, addTeam, removeTeam } =
-    useTeam();
-  const { resetQuestions, setQuestions } = useQuestions();
-  const { resetClickedCells, setRecentlyClickedIndex } = useBoard();
-  const { sessionId, startSession, closeSession, joinSession, setSessionId, wsRef, sessionLoading } =
-    useSession();
-  const { setIsHomePage } = usePage();
+  const teams = useAppStore(state => state.teams);
+  const buzzLock = useAppStore(state => state.buzzLock);
+  const resetQuestions = useAppStore(state => state.resetQuestions);
+  const setQuestions = useAppStore(state => state.setQuestions);
+  const resetClickedCells = useAppStore(state => state.resetClickedCells);
+  const setRecentlyClickedIndex = useAppStore(state => state.setRecentlyClickedIndex);
+  const sessionId = useAppStore(state => state.sessionId);
+  const sessionLoading = useAppStore(state => state.sessionLoading);
+  const setCurrentPage = useAppStore(state => state.setCurrentPage);
+
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScores, setShowScores] = useState(false);
@@ -42,11 +53,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const onHome = !player && location.pathname === "/";
-    setIsHomePage(onHome);
-    if (sessionId && wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "SetPage", page: onHome ? "home" : "question" }));
+    setCurrentPage(onHome ? "home" : "question");
+    
+    if (sessionId && wsService.send({ type: "SetPage", page: onHome ? "home" : "question" })) {
+      // Sent successfully
     }
-  }, [player, location.pathname, setIsHomePage, sessionId, wsRef]);
+  }, [player, location.pathname, setCurrentPage, sessionId]);
 
   useEffect(() => {
     if (sessionId === null) {
@@ -54,23 +66,16 @@ const App: React.FC = () => {
     }
   }, [sessionId]);
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const toggleScores = () => setShowScores((prev) => !prev);
+  const toggleManagingTeams = () => setManagingTeams((prev) => !prev);
 
-  const toggleScores = () => {
-    setShowScores((prev) => !prev);
-  };
-
-  const toggleManagingTeams = () => {
-    setManagingTeams((prev) => !prev);
-  };
-
-  const handleJoinSession = async (sessionId: string) => {
-    const success = await joinSession(sessionId);
+  const handleJoinSession = async (sid: string) => {
+    const success = await joinSession(sid);
     if (success) {
       setPlayer(true);
-      hasPlayedBuzzerRef.current = true;
+      // Wait to play buzzer sound since they just joined
+      useAppStore.getState().setHasPlayedBuzzer(true);
     } else {
       setMobileSessionError("Invalid session code. Please try again.");
     }
@@ -79,8 +84,8 @@ const App: React.FC = () => {
 
   const handleLeaveSession = () => {
     setPlayer(false);
-    hasPlayedBuzzerRef.current = false;
-    setSessionId(null);
+    useAppStore.getState().setHasPlayedBuzzer(false);
+    apiLeaveSession();
     setMobileSessionId("");
   };
 
@@ -97,12 +102,12 @@ const App: React.FC = () => {
   }
 
   const resetTeams = () => {
-    const defaultTeams = [
+    const defaultTeamsConfig = [
       { team_name: "Team 1", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
       { team_name: "Team 2", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
       { team_name: "Team 3", score: 0, buzz_lock_owned: false, has_buzzed: false, last_buzz_attempt: null },
     ];
-    defaultTeams.forEach((team, index) => {
+    defaultTeamsConfig.forEach((team, index) => {
       modifyTeam(team, index);
     });
   };
@@ -201,7 +206,7 @@ const App: React.FC = () => {
         {showScores && (
           <ScoreContainer
             teams={teams}
-            loading={loading}
+            loading={sessionLoading}
             player={player}
             modifyTeam={modifyTeam}
             managingTeams={managingTeams}

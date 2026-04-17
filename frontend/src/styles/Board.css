@@ -1,72 +1,61 @@
+/* ─── Board Grid ─────────────────────────────────────────────────────────── */
+.board-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(var(--num-columns, 6), 1fr);
-  grid-template-rows: 3rem repeat(var(--num-rows, 5), 1fr);
-  width: 80vw;
-  height: 80vh;
+  grid-template-rows: 3.25rem repeat(var(--num-rows, 5), 1fr);
+  width: 100%;
+  max-width: 100vw;
+  height: min(75vh, 820px);
   padding: 1rem;
   gap: 10px;
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  margin: 0;
   position: relative;
 }
 
-.board::-webkit-scrollbar {
-  display: none;
-}
+.board::-webkit-scrollbar { display: none; }
 
-.board-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.5s ease, transform 0.5s ease, opacity 0.5s ease;
-}
-
-.board-button.clicked {
-  background-color: var(--button-active);
-  color: var(--text-secondary);
-  cursor: default;
-  transform: scale(0.95);
-  opacity: 0.5;
-  filter: brightness(0.8);
-}
-
-.board-button.recentlyClicked {
-  border: 2px solid #005ec250;
-  color: var(--text-color);
-}
-
-.board-button.animate {
-  animation: expand-retract .5s ease-in-out;
-}
-
-@keyframes expand-retract {
-  0% {
-    transform: scale(1);
-    background-color: white;
-  }
-
-  50% {
-    transform: scale(1.2);
-    background-color: #f1f1f1;
-  }
-
-  100% {
-    transform: scale(1);
-    background-color: white;
-  }
-}
-
+/* ─── Category Headers ───────────────────────────────────────────────────── */
 .category {
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  cursor: default;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+
+.category h4 {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
   cursor: pointer;
+  transition: color var(--transition-fast);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.category h4:hover {
+  color: var(--text-color);
+  background-color: var(--surface-2);
 }
 
 .category input {
@@ -75,17 +64,107 @@
   align-items: center;
   text-align: center;
   width: 100%;
-  padding: 1rem;
+  padding: 0.3rem 0.5rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background-color: var(--accent-subtle);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
 }
 
+/* ─── Board Buttons ──────────────────────────────────────────────────────── */
+.board-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: var(--surface-1);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-base),
+              color var(--transition-base),
+              transform var(--transition-base),
+              box-shadow var(--transition-base),
+              opacity var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.board-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.06));
+  pointer-events: none;
+}
+
+.board-button:hover {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.board-button:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Clicked (used) cell */
+.board-button.clicked {
+  background-color: var(--surface-2);
+  color: var(--text-tertiary);
+  border-color: transparent;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.45;
+}
+
+.board-button.clicked::before { display: none; }
+.board-button.clicked:hover {
+  background-color: var(--surface-2);
+  color: var(--text-tertiary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Recently clicked highlight */
+.board-button.recentlyClicked {
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle), var(--shadow-sm);
+}
+
+/* Reset animation */
+.board-button.animate {
+  animation: boardReset 0.5s ease-in-out;
+}
+
+@keyframes boardReset {
+  0%   { transform: scale(1); background-color: var(--surface-1); }
+  40%  { transform: scale(1.12); background-color: var(--accent-subtle); }
+  100% { transform: scale(1); background-color: var(--surface-1); }
+}
+
+/* Blank placeholder cells */
+.board-button:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
-  .board {
-    overflow: hidden;
-  }
+  .board { overflow: hidden; }
 }
 
 @media (max-width: 767px) {
-  .board {
-    overflow-x: scroll;
-  }
+  .board { overflow-x: scroll; }
 }

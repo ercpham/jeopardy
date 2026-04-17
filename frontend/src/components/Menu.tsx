@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSession } from "../context/SessionContext";
+import { useAppStore } from "../store/useAppStore";
 import {
   Upload,
   RotateCcw,
@@ -54,7 +54,7 @@ const Menu: React.FC<MenuProps> = ({
 }) => {
   const [joinSessionId, setJoinSessionId] = useState("");
   const [copyMessageVisible, setCopyMessageVisible] = useState(false);
-  const { sessionLoading } = useSession();
+  const sessionLoading = useAppStore(state => state.sessionLoading);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target;
@@ -160,13 +160,16 @@ const Menu: React.FC<MenuProps> = ({
         <div className="menu-overlay" onClick={handleOverlayClick}>
           <div className="menu">
             <div className="menu-header">
-              <BookOpen size={20} />
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <BookOpen size={18} />
+                <span className="menu-title">Bible Challenge</span>
+              </div>
               <button
                 className="menu-close"
                 onClick={closeMenu}
                 aria-label="Close Menu"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
             <ul>

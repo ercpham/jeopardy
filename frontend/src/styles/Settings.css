@@ -1,27 +1,39 @@
+/* ─── Gear Button ────────────────────────────────────────────────────────── */
 .settings-button {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: none;
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.45rem;
   z-index: 1000;
-  box-shadow: none;
-  padding: 0.5rem;
-  color: var(--text-color, #333);
-  transition: transform 0.3s ease;
+  box-shadow: var(--shadow-xs);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast),
+              background-color var(--transition-fast),
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
 }
 
 .settings-button:hover {
-  background: none;
-  transform: rotate(45deg) scale(1.2);
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-accent);
+  transform: rotate(30deg) scale(1.1);
 }
 
+/* ─── Backdrop ───────────────────────────────────────────────────────────── */
 .settings-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 2000;
   display: flex;
   justify-content: center;
@@ -29,140 +41,283 @@
   animation: fadeIn 0.2s ease;
 }
 
+/* ─── Modal Card ─────────────────────────────────────────────────────────── */
 .settings-modal {
-  background-color: var(--modal-bg, #ffffff);
-  border-radius: 12px;
-  padding: 1.5rem;
+  background-color: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.75rem 1.5rem;
   width: 90%;
   max-width: 420px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  animation: slideIn 0.3s ease;
-  color: var(--text-color, #333);
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  color: var(--text-color);
+  position: relative;
+  overflow: hidden;
 }
 
+.settings-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--accent-subtle) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
 .settings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
 }
 
 .settings-header h2 {
-  margin: 0;
   font-size: var(--fs-lg);
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
+/* ─── Close Button ───────────────────────────────────────────────────────── */
 .settings-close {
   background: none;
+  border: none;
   box-shadow: none;
-  padding: 0.3rem;
-  border-radius: 4px;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: color 0.2s, background-color 0.2s;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .settings-close:hover {
-  background: none;
-  color: var(--text-color, #333);
-  background-color: var(--button-hover, #f1f1f1);
+  background: var(--surface-2);
+  color: var(--text-color);
   transform: none;
+  box-shadow: none;
 }
 
+/* ─── Options List ───────────────────────────────────────────────────────── */
 .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
 }
 
 .settings-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem;
-  border-radius: 8px;
-  background-color: var(--option-bg, #f7f7f7);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-color);
+  gap: 1rem;
 }
 
+.settings-option-info { flex: 1; min-width: 0; }
+
 .settings-option-info h4 {
-  margin: 0 0 0.2rem 0;
   font-size: var(--fs-xs);
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  color: var(--text-color);
 }
 
 .settings-option-info p {
-  margin: 0;
   font-size: var(--fs-xs);
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
+  font-weight: 400;
+  line-height: 1.4;
 }
 
+/* ─── Toggle Switch ──────────────────────────────────────────────────────── */
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 48px;
+  width: 46px;
   height: 26px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .toggle-switch input {
   opacity: 0;
   width: 0;
   height: 0;
+  position: absolute;
 }
 
 .toggle-slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.3s;
+  inset: 0;
+  background-color: var(--surface-3);
+  border: 1px solid var(--border-color);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
   border-radius: 26px;
 }
 
 .toggle-slider::before {
   position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
+  content: '';
+  height: 18px;
+  width: 18px;
   left: 3px;
   bottom: 3px;
   background-color: white;
-  transition: 0.3s;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
 }
 
 .toggle-switch input:checked + .toggle-slider {
-  background-color: #005ec2;
+  background-color: var(--accent);
+  border-color: var(--accent);
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(22px);
+  transform: translateX(20px);
 }
 
+/* ─── Column-layout option (for slider) ─────────────────────────────────── */
+.settings-option--column {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+/* ─── Font Size Slider ───────────────────────────────────────────────────── */
+.font-size-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+/* Flanking "A" letters */
+.font-size-label-sm {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+}
+.font-size-label-lg {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text-color);
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Track + ticks container */
+.font-size-track-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Native range reset */
+.font-size-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) calc(var(--pct, 0%) ),
+    var(--border-strong) calc(var(--pct, 0%)),
+    var(--border-strong) 100%
+  );
+  outline: none;
+  cursor: pointer;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.font-size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18), 0 0 0 3px var(--accent-subtle);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.font-size-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18), 0 0 0 3px var(--accent-subtle);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.font-size-slider:hover::-webkit-slider-thumb,
+.font-size-slider:focus::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.22), 0 0 0 4px var(--accent-subtle);
+}
+
+/* Tick marks row */
+.font-size-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px; /* half thumb width to center ticks under thumb stops */
+}
+
+.font-size-tick {
+  width: 2px;
+  height: 6px;
+  border-radius: 2px;
+  background-color: var(--border-strong);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.font-size-tick--active {
+  background-color: var(--accent);
+  transform: scaleY(1.4);
+}
+
+/* Current step label */
+.font-size-step-label {
+  text-align: center;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-top: -0.25rem;
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }

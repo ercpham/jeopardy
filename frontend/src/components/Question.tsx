@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSettings } from "../context/SettingsContext";
-import { useTeam } from "../context/TeamContext";
+import { useAppStore } from "../store/useAppStore";
+import { releaseBuzzLock, resetBuzzedTeams } from "../services/api";
 import { Timer } from "lucide-react";
 import "../styles/Question.css";
 
@@ -25,8 +25,8 @@ const Question: React.FC<{
   onTimerExpired,
 }) => {
   const navigate = useNavigate();
-  const { timerEnabled } = useSettings();
-  const { resetBuzzedTeams, releaseBuzzLock, teams } = useTeam();
+  const timerEnabled = useAppStore(state => state.timerEnabled);
+  const teams = useAppStore(state => state.teams);
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [timerExpired, setTimerExpired] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

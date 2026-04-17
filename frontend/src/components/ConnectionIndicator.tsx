@@ -1,8 +1,10 @@
 import React from 'react';
-import { useSession } from '../context/SessionContext';
+import { useAppStore } from '../store/useAppStore';
 
 const ConnectionIndicator: React.FC = () => {
-  const { connectionState, pingLatency, sessionId } = useSession();
+  const connectionState = useAppStore(state => state.connectionState);
+  const pingLatency = useAppStore(state => state.pingLatency);
+  const sessionId = useAppStore(state => state.sessionId);
 
   // Don't show indicator if there's no session
   if (!sessionId) {
